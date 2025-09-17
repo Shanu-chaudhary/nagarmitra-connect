@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import {Button} from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LogOut, User, Bell, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,17 +15,17 @@ const DashboardHeader = ({ title, userRole }: DashboardHeaderProps) => {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate("/");
   };
 
   const getRoleBadgeColor = (role: string) => {
     switch (role.toLowerCase()) {
-      case 'citizen': return 'bg-primary/10 text-primary border-primary/20';
-      case 'department': return 'bg-warning/10 text-warning border-warning/20';
-      case 'worker': return 'bg-success/10 text-success border-success/20';
-      case 'municipal': return 'bg-danger/10 text-danger border-danger/20';
-      case 'state': return 'bg-accent/10 text-accent border-accent/20';
-      default: return 'bg-muted text-muted-foreground';
+      case "citizen": return "bg-primary/10 text-primary border-primary/20";
+      case "department": return "bg-warning/10 text-warning border-warning/20";
+      case "worker": return "bg-success/10 text-success border-success/20";
+      case "municipal": return "bg-danger/10 text-danger border-danger/20";
+      case "state": return "bg-accent/10 text-accent border-accent/20";
+      default: return "bg-muted text-muted-foreground";
     }
   };
 
@@ -83,3 +83,5 @@ const DashboardHeader = ({ title, userRole }: DashboardHeaderProps) => {
 };
 
 export default DashboardHeader;
+
+

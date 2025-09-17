@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { 
   Camera, 
   Mic, 
@@ -41,6 +42,8 @@ const IssueReportModal = ({ open, onOpenChange }: IssueReportModalProps) => {
   });
   const [step, setStep] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [keepActiveFor10Days, setKeepActiveFor10Days] = useState(true);
+  const [activeUntil, setActiveUntil] = useState<Date | null>(null);
 
   const categories = [
     { id: "road", label: "Road Issues", sla: "48 hours", department: "Roads & Infrastructure" },
@@ -50,12 +53,6 @@ const IssueReportModal = ({ open, onOpenChange }: IssueReportModalProps) => {
     { id: "drainage", label: "Drainage", sla: "36 hours", department: "Engineering Department" },
     { id: "traffic", label: "Traffic Issues", sla: "24 hours", department: "Traffic Department" },
     { id: "other", label: "Other", sla: "96 hours", department: "Municipal Office" }
-  ];
-
-  const priorityLevels = [
-    { id: "low", label: "Low Priority", description: "Can wait for standard resolution time", color: "success" },
-    { id: "medium", label: "Medium Priority", description: "Needs attention within SLA", color: "warning" },
-    { id: "high", label: "High Priority", description: "Urgent, affects public safety", color: "danger" }
   ];
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,6 +93,12 @@ const IssueReportModal = ({ open, onOpenChange }: IssueReportModalProps) => {
   const handleSubmit = () => {
     // Submit logic will be implemented with backend
     console.log("Submitting issue:", formData);
+    if (keepActiveFor10Days) {
+      const tenDaysMs = 10 * 24 * 60 * 60 * 1000;
+      setActiveUntil(new Date(Date.now() + tenDaysMs));
+    } else {
+      setActiveUntil(null);
+    }
     setStep(4); // Show success step
   };
 
@@ -300,34 +303,7 @@ const IssueReportModal = ({ open, onOpenChange }: IssueReportModalProps) => {
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="priority">Priority Level</Label>
-                  <div className="grid grid-cols-1 gap-3">
-                    {priorityLevels.map((priority) => (
-                      <Card 
-                        key={priority.id}
-                        className={`cursor-pointer border-2 transition-colors ${
-                          formData.priority === priority.id 
-                            ? `border-${priority.color} bg-${priority.color}/5` 
-                            : 'border-border hover:border-muted-foreground'
-                        }`}
-                        onClick={() => setFormData(prev => ({...prev, priority: priority.id}))}
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-medium">{priority.label}</p>
-                              <p className="text-sm text-muted-foreground">{priority.description}</p>
-                            </div>
-                            <Badge className={`status-${priority.color}`}>
-                              {priority.id.toUpperCase()}
-                            </Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
+                {/* Removed Priority Level selection for citizen */}
 
                 <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
@@ -368,7 +344,7 @@ const IssueReportModal = ({ open, onOpenChange }: IssueReportModalProps) => {
               <Button 
                 onClick={() => setStep(3)} 
                 className="btn-government"
-                disabled={!formData.category || !formData.priority}
+                disabled={!formData.category}
               >
                 Next: Review & Submit
               </Button>
@@ -392,12 +368,7 @@ const IssueReportModal = ({ open, onOpenChange }: IssueReportModalProps) => {
                       <Label className="text-sm font-medium text-muted-foreground">Category</Label>
                       <p className="font-medium">{selectedCategory?.label}</p>
                     </div>
-                    <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Priority</Label>
-                      <Badge className={`status-${formData.priority === 'high' ? 'danger' : formData.priority === 'medium' ? 'warning' : 'success'}`}>
-                        {formData.priority?.toUpperCase()}
-                      </Badge>
-                    </div>
+                    {/* Priority removed from review */}
                     <div>
                       <Label className="text-sm font-medium text-muted-foreground">Expected Resolution</Label>
                       <p className="font-medium">{selectedCategory?.sla}</p>
@@ -425,6 +396,17 @@ const IssueReportModal = ({ open, onOpenChange }: IssueReportModalProps) => {
                       <p className="text-sm">{formData.photos.length} photo(s) attached</p>
                     </div>
                   )}
+
+                  <div className="pt-2">
+                    <Label className="text-sm font-medium text-muted-foreground">Active Window</Label>
+                    <div className="mt-2 flex items-center justify-between rounded border p-3 bg-muted/50">
+                      <div>
+                        <p className="font-medium">Keep active for 10 days after submission</p>
+                        <p className="text-xs text-muted-foreground">Citizens can set whether the complaint remains active for 10 days.</p>
+                      </div>
+                      <Switch checked={keepActiveFor10Days} onCheckedChange={setKeepActiveFor10Days} />
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -470,11 +452,23 @@ const IssueReportModal = ({ open, onOpenChange }: IssueReportModalProps) => {
                     <span className="text-sm text-muted-foreground">Status:</span>
                     <Badge className="status-primary">Submitted</Badge>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Active Until:</span>
+                    <span className="text-sm font-medium">{activeUntil ? activeUntil.toLocaleString() : 'Not set'}</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
             <div className="flex justify-center space-x-4">
+              {!activeUntil && (
+                <Button variant="outline" onClick={() => {
+                  const tenDaysMs = 10 * 24 * 60 * 60 * 1000;
+                  setActiveUntil(new Date(Date.now() + tenDaysMs));
+                }}>
+                  Set Active for 10 Days
+                </Button>
+              )}
               <Button variant="outline" onClick={() => {
                 setStep(1);
                 setFormData({
@@ -487,6 +481,8 @@ const IssueReportModal = ({ open, onOpenChange }: IssueReportModalProps) => {
                   photos: [],
                   voiceNote: null
                 });
+                setKeepActiveFor10Days(true);
+                setActiveUntil(null);
               }}>
                 Report Another Issue
               </Button>
