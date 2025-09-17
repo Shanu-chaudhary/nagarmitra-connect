@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import DashboardHeader from "@/components/layout/DashboardHeader";
 import { 
   Shield, 
   TrendingUp, 
@@ -53,15 +54,17 @@ const MunicipalDashboardPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-bg p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
+    <div className="min-h-screen bg-background">
+      <DashboardHeader title="Municipal Control Center" userRole="Municipal Authority" />
+      
+      <div className="container mx-auto max-w-6xl p-6">
+        {/* Header Actions */}
+        <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-              <Shield className="h-8 w-8 text-primary" />
-              Municipal Control Center
-            </h1>
+            <h2 className="text-2xl font-bold text-foreground flex items-center gap-3">
+              <Shield className="h-6 w-6 text-primary" />
+              City Overview
+            </h2>
             <p className="text-muted-foreground">City-wide oversight and department coordination</p>
           </div>
           <div className="flex space-x-3">

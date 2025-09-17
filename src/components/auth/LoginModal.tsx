@@ -5,7 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Phone, Shield, User, MapPin, Calendar } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 
 interface LoginModalProps {
   open: boolean;
@@ -16,6 +20,7 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
   const [mobile, setMobile] = useState("");
   const [otp, setOtp] = useState("");
   const [showOtp, setShowOtp] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     age: "",
@@ -24,20 +29,85 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
     pincode: "",
   });
 
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const dummyCredentials = [
+    { mobile: "1234567890", otp: "123456", role: "Citizen" },
+    { mobile: "2345678901", otp: "234567", role: "Department Officer" },
+    { mobile: "3456789012", otp: "345678", role: "Field Worker" },
+    { mobile: "4567890123", otp: "456789", role: "Municipal Authority" },
+    { mobile: "5678901234", otp: "567890", role: "State Official" },
+  ];
+
   const handleSendOtp = () => {
     if (mobile.length === 10) {
       setShowOtp(true);
+      toast({
+        title: "OTP Sent Successfully",
+        description: `OTP sent to ${mobile}. Check dummy credentials below for testing.`,
+      });
     }
   };
 
   const handleRegister = () => {
     // Registration logic will be implemented with Supabase
     console.log("Registration data:", { mobile, ...formData });
+    toast({
+      title: "Registration Successful",
+      description: "Please use the login tab with dummy credentials for testing.",
+    });
   };
 
-  const handleLogin = () => {
-    // Login logic will be implemented with Supabase
-    console.log("Login with:", { mobile, otp });
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      const result = await login(mobile, otp);
+      
+      if (result.success && result.role) {
+        toast({
+          title: "Login Successful",
+          description: `Welcome! Redirecting to ${result.role} dashboard...`,
+        });
+        
+        onOpenChange(false);
+        
+        // Navigate to role-specific dashboard
+        switch (result.role) {
+          case 'citizen':
+            navigate('/citizen');
+            break;
+          case 'department':
+            navigate('/department');
+            break;
+          case 'worker':
+            navigate('/worker');
+            break;
+          case 'municipal':
+            navigate('/municipal');
+            break;
+          case 'state':
+            navigate('/state');
+            break;
+          default:
+            navigate('/');
+        }
+      } else {
+        toast({
+          title: "Login Failed",
+          description: result.error || "Invalid credentials",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Login Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -105,14 +175,39 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
                     Send OTP
                   </Button>
                 ) : (
-                  <Button 
-                    onClick={handleLogin} 
-                    className="w-full btn-government"
-                    disabled={otp.length !== 6}
-                  >
-                    Verify & Login
-                  </Button>
+                <Button 
+                  onClick={handleLogin} 
+                  className="w-full btn-government"
+                  disabled={otp.length !== 6 || loading}
+                >
+                  {loading ? "Verifying..." : "Verify & Login"}
+                </Button>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Dummy Credentials for Testing */}
+            <Card className="mt-4 bg-muted/50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium">🚀 Demo Credentials</CardTitle>
+                <CardDescription className="text-xs">
+                  Use these credentials to test different roles
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-2">
+                  {dummyCredentials.map((cred, index) => (
+                    <div key={index} className="flex items-center justify-between text-xs bg-background/50 p-2 rounded border">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                          {cred.role}
+                        </Badge>
+                        <span className="font-mono">{cred.mobile}</span>
+                      </div>
+                      <span className="font-mono text-muted-foreground">OTP: {cred.otp}</span>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

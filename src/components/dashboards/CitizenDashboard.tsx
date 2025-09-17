@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import DashboardHeader from "@/components/layout/DashboardHeader";
+import IssueReportModal from "@/components/issues/IssueReportModal";
 import { 
   Plus, 
   MapPin, 
@@ -17,6 +19,7 @@ import {
 
 const CitizenDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const myComplaints = [
     {
@@ -80,22 +83,27 @@ const CitizenDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-bg p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
+    <div className="min-h-screen bg-background">
+      <DashboardHeader title="Citizen Dashboard" userRole="Citizen" />
+      
+      <div className="container mx-auto max-w-6xl p-6">
+        {/* Header Actions */}
+        <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Citizen Dashboard</h1>
-            <p className="text-muted-foreground">Track your complaints and report new issues</p>
+            <h2 className="text-2xl font-bold text-foreground">Your Issues</h2>
+            <p className="text-muted-foreground">Manage and track your civic complaints</p>
           </div>
-          <Button className="btn-government">
-            <Plus className="mr-2 h-4 w-4" />
+          <Button 
+            onClick={() => setShowReportModal(true)}
+            className="btn-government flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
             Report New Issue
           </Button>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (
             <Card key={index} className="government-card hover-lift">
               <CardContent className="p-6">
@@ -262,6 +270,12 @@ const CitizenDashboard = () => {
           </Card>
         </div>
       </div>
+
+      {/* Issue Report Modal */}
+      <IssueReportModal 
+        open={showReportModal}
+        onOpenChange={setShowReportModal}
+      />
     </div>
   );
 };

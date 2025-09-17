@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import DashboardHeader from "@/components/layout/DashboardHeader";
 import { 
   Users, 
   MapPin, 
@@ -131,12 +132,14 @@ const DepartmentDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-bg p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
+    <div className="min-h-screen bg-background">
+      <DashboardHeader title="Roads & Infrastructure Department" userRole="Department Officer" />
+      
+      <div className="container mx-auto max-w-6xl p-6">
+        {/* Header Actions */}
+        <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Roads & Infrastructure Department</h1>
+            <h2 className="text-2xl font-bold text-foreground">Department Overview</h2>
             <p className="text-muted-foreground">Manage civic issues and coordinate field operations</p>
           </div>
           <div className="flex space-x-3">

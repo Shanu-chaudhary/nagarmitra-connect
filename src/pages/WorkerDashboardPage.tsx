@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import DashboardHeader from "@/components/layout/DashboardHeader";
 import { 
   HardHat, 
   CheckCircle, 
@@ -46,15 +47,17 @@ const WorkerDashboardPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-bg p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-background">
+      <DashboardHeader title="Field Worker Dashboard" userRole="Field Worker" />
+      
+      <div className="container mx-auto max-w-4xl p-6">
+        {/* Header Actions */}
+        <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-              <HardHat className="h-8 w-8 text-primary" />
-              Worker Dashboard
-            </h1>
+            <h2 className="text-2xl font-bold text-foreground flex items-center gap-3">
+              <HardHat className="h-6 w-6 text-primary" />
+              My Tasks
+            </h2>
             <p className="text-muted-foreground">Your assigned tasks and work progress</p>
           </div>
           <Badge variant="outline" className="bg-success/10 text-success border-success">
