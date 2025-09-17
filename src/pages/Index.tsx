@@ -15,7 +15,7 @@ const Index = () => {
     { label: "Issues Resolved", value: "15,247", icon: CheckCircle, color: "success" },
     { label: "Active Cases", value: "1,832", icon: FileText, color: "warning" },
     { label: "Departments", value: "12", icon: Users, color: "primary" },
-    { label: "Wards Covered", value: "145", name: "MapPin", color: "accent" },
+    { label: "Wards Covered", value: "145", icon: MapPin, color: "accent" },
   ];
 
   const features = [
