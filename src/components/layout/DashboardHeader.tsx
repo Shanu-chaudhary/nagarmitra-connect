@@ -14,7 +14,7 @@ const DashboardHeader = ({ title, userRole }: DashboardHeaderProps) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
+    if (user) logout();
     navigate("/");
   };
 
@@ -54,28 +54,24 @@ const DashboardHeader = ({ title, userRole }: DashboardHeaderProps) => {
 
         {/* User Actions */}
         <div className="flex items-center space-x-4">
-          {user && (
-            <>
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <User className="h-4 w-4" />
-                <span className="hidden sm:inline">{user.name}</span>
-              </div>
-              
-              <Button variant="ghost" size="sm">
-                <Bell className="h-4 w-4" />
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={handleLogout}
-                className="flex items-center space-x-2"
-              >
-                <LogOut className="h-4 w-4" />
-                <span className="hidden sm:inline">Logout</span>
-              </Button>
-            </>
-          )}
+          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+            <User className="h-4 w-4" />
+            <span className="hidden sm:inline">{user?.name ?? "Citizen"}</span>
+          </div>
+          
+          <Button variant="ghost" size="sm" aria-label="Notifications">
+            <Bell className="h-4 w-4" />
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleLogout}
+            className="flex items-center space-x-2"
+          >
+            <LogOut className="h-4 w-4" />
+            <span className="hidden sm:inline">Logout</span>
+          </Button>
         </div>
       </div>
     </header>
