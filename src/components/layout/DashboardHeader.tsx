@@ -1,6 +1,8 @@
 import {Button} from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LogOut, User, Bell, Shield } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
@@ -56,10 +58,32 @@ const DashboardHeader = ({ title, userRole }: DashboardHeaderProps) => {
         <div className="flex items-center space-x-4">
           {user && (
             <>
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <User className="h-4 w-4" />
-                <span className="hidden sm:inline">{user.name}</span>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center space-x-2 text-sm text-foreground border border-border rounded px-2 py-1 hover:bg-secondary">
+                    <Avatar className="h-6 w-6">
+                      <AvatarFallback className="text-xs">
+                        {user.name.split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="hidden sm:inline">Profile</span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel className="max-w-[220px] truncate">{user.name}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    View Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    Notifications
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               
               <Button variant="ghost" size="sm">
                 <Bell className="h-4 w-4" />

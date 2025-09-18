@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,9 +18,17 @@ import {
   BarChart3,
   Filter
 } from "lucide-react";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const DepartmentDashboard = () => {
   const [selectedFilter, setSelectedFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState<"all" | "High" | "Medium" | "Low">("all");
+  const [selectedIssue, setSelectedIssue] = useState<any | null>(null);
+  const [assignIssue, setAssignIssue] = useState<any | null>(null);
 
   const departmentStats = [
     { label: "Total Issues", value: "127", icon: FileText, color: "primary", change: "+12%" },
@@ -29,7 +37,7 @@ const DepartmentDashboard = () => {
     { label: "SLA Breaches", value: "8", icon: AlertTriangle, color: "danger", change: "-15%" },
   ];
 
-  const recentIssues = [
+  const [allIssues, setAllIssues] = useState([
     {
       id: "ISS001",
       title: "Pothole on MG Road",
@@ -39,8 +47,15 @@ const DepartmentDashboard = () => {
       submittedBy: "Rajesh Kumar",
       timeAgo: "2 hours ago",
       slaRemaining: "4 hours",
-      status: "Pending Assignment",
-      urgencyLevel: 90
+      status: "New",
+      urgencyLevel: 90,
+      description: "Large pothole near the intersection causing traffic slowdown.",
+      attachments: {
+        photos: [
+          "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800&auto=format&fit=crop&q=60"
+        ],
+        videos: [] as string[]
+      }
     },
     {
       id: "ISS002",
@@ -51,26 +66,45 @@ const DepartmentDashboard = () => {
       submittedBy: "Priya Singh",
       timeAgo: "4 hours ago",
       slaRemaining: "1 day",
-      status: "Assigned",
+      status: "Pending",
       worker: "Electrician Team A",
-      urgencyLevel: 60
+      urgencyLevel: 60,
+      description: "Two lights not working leading to dark stretch at night.",
+      attachments: { photos: [], videos: [] as string[] }
     },
     {
       id: "ISS003",
-      title: "Garbage Collection Missed",
-      location: "Ward 8, Residential Area",
-      priority: "Medium",
-      category: "Sanitation",
+      title: "Broken Footpath Tiles",
+      location: "Ward 8, Park Road",
+      priority: "Low",
+      category: "Road Infrastructure",
       submittedBy: "Amit Sharma",
       timeAgo: "6 hours ago",
       slaRemaining: "8 hours",
       status: "In Progress",
-      worker: "Sanitation Team B",
-      urgencyLevel: 75
+      worker: "Maintenance Team B",
+      urgencyLevel: 40,
+      description: "Multiple tiles are loose and broken causing tripping hazard.",
+      attachments: { photos: [], videos: [] as string[] }
+    },
+    {
+      id: "ISS004",
+      title: "Road Repair Completed",
+      location: "Ward 5, Main Street",
+      priority: "Medium",
+      category: "Road Repair",
+      submittedBy: "Suresh Kumar",
+      timeAgo: "1 day ago",
+      slaRemaining: "Completed",
+      status: "Resolved",
+      worker: "Road Team C",
+      urgencyLevel: 0,
+      description: "Road repair work completed successfully.",
+      attachments: { photos: [], videos: [] as string[] }
     }
-  ];
+  ]);
 
-  const workers = [
+  const [workers, setWorkers] = useState([
     {
       id: "WRK001",
       name: "Ravi Prasad",
@@ -101,12 +135,15 @@ const DepartmentDashboard = () => {
       availability: "Available",
       lastActive: "Online"
     }
-  ];
+  ]);
+
+  const [addWorkerOpen, setAddWorkerOpen] = useState(false);
+  const [newWorker, setNewWorker] = useState({ name: "", role: "", maxLoad: 5 });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Pending Assignment": return "danger";
-      case "Assigned": return "warning";
+      case "New": return "danger";
+      case "Pending": return "warning";
       case "In Progress": return "primary";
       case "Resolved": return "success";
       default: return "secondary";
@@ -117,8 +154,21 @@ const DepartmentDashboard = () => {
     switch (priority) {
       case "High": return "danger";
       case "Medium": return "warning";
-      case "Low": return "success";
+      case "Low": return "yellow";
       default: return "secondary";
+    }
+  };
+
+  const getPriorityBadgeClass = (priority: string) => {
+    switch (priority) {
+      case "High":
+        return "bg-red-100 text-red-700 border border-red-200";
+      case "Medium":
+        return "bg-orange-100 text-orange-700 border border-orange-200";
+      case "Low":
+        return "bg-yellow-100 text-yellow-700 border border-yellow-200";
+      default:
+        return "bg-secondary text-secondary-foreground";
     }
   };
 
@@ -129,6 +179,28 @@ const DepartmentDashboard = () => {
       case "Offline": return "danger";
       default: return "secondary";
     }
+  };
+
+  const [activeIssueTab, setActiveIssueTab] = useState<"new" | "pending" | "in-progress" | "resolved">("new");
+
+  const getIssuesByStatus = (status: string) => {
+    return allIssues.filter(issue => issue.status === status);
+  };
+
+  const filteredIssues = useMemo(() => {
+    const statusIssues = getIssuesByStatus(
+      activeIssueTab === "new" ? "New" :
+      activeIssueTab === "pending" ? "Pending" :
+      activeIssueTab === "in-progress" ? "In Progress" :
+      "Resolved"
+    );
+    
+    if (priorityFilter === "all") return statusIssues;
+    return statusIssues.filter((i) => i.priority === priorityFilter);
+  }, [allIssues, activeIssueTab, priorityFilter]);
+
+  const handleAssignToWorker = (issueId: string, workerName: string) => {
+    setAllIssues((prev) => prev.map((i) => i.id === issueId ? { ...i, worker: workerName, status: "Pending" } : i));
   };
 
   return (
@@ -147,7 +219,7 @@ const DepartmentDashboard = () => {
               <Bell className="mr-2 h-4 w-4" />
               Notifications (5)
             </Button>
-            <Button className="btn-government">
+            <Button className="btn-government" onClick={() => setAddWorkerOpen(true)}>
               <UserPlus className="mr-2 h-4 w-4" />
               Add Worker
             </Button>
@@ -191,27 +263,54 @@ const DepartmentDashboard = () => {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <div>
-                    <CardTitle>Recent Issues</CardTitle>
-                    <CardDescription>Prioritized list of issues requiring attention</CardDescription>
+                    <CardTitle>Issue Management</CardTitle>
+                    <CardDescription>Manage issues by status and priority</CardDescription>
                   </div>
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm">
-                      <Filter className="mr-2 h-4 w-4" />
-                      Filter
-                    </Button>
+                  <div className="flex items-center space-x-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Filter className="mr-2 h-4 w-4" />
+                          Filter {priorityFilter !== "all" && `(${priorityFilter})`}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => setPriorityFilter("all")}>
+                          All Priorities
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setPriorityFilter("High")}>
+                          High Priority
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setPriorityFilter("Medium")}>
+                          Medium Priority
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setPriorityFilter("Low")}>
+                          Low Priority
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {recentIssues.map((issue) => (
+                <Tabs value={activeIssueTab} onValueChange={(value) => setActiveIssueTab(value as any)} className="space-y-4">
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="new">New Issues ({getIssuesByStatus("New").length})</TabsTrigger>
+                    <TabsTrigger value="pending">Pending ({getIssuesByStatus("Pending").length})</TabsTrigger>
+                    <TabsTrigger value="in-progress">In Progress ({getIssuesByStatus("In Progress").length})</TabsTrigger>
+                    <TabsTrigger value="resolved">Resolved ({getIssuesByStatus("Resolved").length})</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value={activeIssueTab} className="space-y-4">
+                    <div className="space-y-4">
+                      {filteredIssues.map((issue) => (
                     <div key={issue.id} className="border border-border rounded-lg p-4 hover-lift">
                       <div className="flex justify-between items-start mb-3">
                         <div className="space-y-2">
                           <div className="flex items-center space-x-3">
                             <h3 className="font-semibold text-foreground">{issue.title}</h3>
                             <Badge variant="outline">{issue.id}</Badge>
-                            <Badge className={`status-${getPriorityColor(issue.priority)}`}>
+                            <Badge className={getPriorityBadgeClass(issue.priority)}>
                               {issue.priority}
                             </Badge>
                           </div>
@@ -246,17 +345,19 @@ const DepartmentDashboard = () => {
                         </div>
 
                         <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" onClick={() => setAssignIssue(issue)}>
                             Assign Worker
                           </Button>
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" onClick={() => setSelectedIssue(issue)}>
                             View Details
                           </Button>
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                      ))}
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </TabsContent>
@@ -371,6 +472,155 @@ const DepartmentDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* View Details Dialog */}
+      <Dialog open={!!selectedIssue} onOpenChange={(open) => !open && setSelectedIssue(null)}>
+        <DialogContent className="max-w-2xl">
+          {selectedIssue && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center justify-between w-full">
+                  <span>Issue Details</span>
+                  <Badge variant="outline">{selectedIssue.id}</Badge>
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold">{selectedIssue.title}</h3>
+                  <Badge className={getPriorityBadgeClass(selectedIssue.priority)}>{selectedIssue.priority}</Badge>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Category:</span>
+                    <div className="font-medium">{selectedIssue.category}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Status:</span>
+                    <div><Badge className={`status-${getStatusColor(selectedIssue.status)}`}>{selectedIssue.status}</Badge></div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Location:</span>
+                    <div className="font-medium">{selectedIssue.location}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Submitted By:</span>
+                    <div className="font-medium">{selectedIssue.submittedBy}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">SLA Remaining:</span>
+                    <div className="font-medium">{selectedIssue.slaRemaining}</div>
+                  </div>
+                  {selectedIssue.worker && (
+                    <div>
+                      <span className="text-muted-foreground">Assigned Worker:</span>
+                      <div className="font-medium">{selectedIssue.worker}</div>
+                    </div>
+                  )}
+                </div>
+                {selectedIssue.description && (
+                  <div>
+                    <div className="text-sm text-muted-foreground mb-1">Description</div>
+                    <div>{selectedIssue.description}</div>
+                  </div>
+                )}
+                <Separator />
+                {(selectedIssue.attachments?.photos?.length || 0) > 0 && (
+                  <div>
+                    <div className="text-sm text-muted-foreground mb-2">Photos</div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {selectedIssue.attachments.photos.map((src: string, idx: number) => (
+                        <img key={idx} src={src} alt={`photo-${idx}`} className="w-full h-24 object-cover rounded" />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {(selectedIssue.attachments?.videos?.length || 0) > 0 && (
+                  <div>
+                    <div className="text-sm text-muted-foreground mb-2">Videos</div>
+                    <div className="space-y-2">
+                      {selectedIssue.attachments.videos.map((src: string, idx: number) => (
+                        <video key={idx} src={src} controls className="w-full rounded" />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign Worker Dialog */}
+      <Dialog open={!!assignIssue} onOpenChange={(open) => !open && setAssignIssue(null)}>
+        <DialogContent className="max-w-xl">
+          {assignIssue && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Assign Worker</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3">
+                <div className="text-sm text-muted-foreground">Select a worker to assign to issue <Badge variant="outline">{assignIssue.id}</Badge></div>
+                <div className="grid grid-cols-1 gap-3">
+                  {workers.map((w) => (
+                    <div key={w.id} className="flex items-center justify-between border rounded p-3">
+                      <div>
+                        <div className="font-medium">{w.name}</div>
+                        <div className="text-sm text-muted-foreground">{w.role} • Load {w.currentLoad}/{w.maxLoad}</div>
+                      </div>
+                      <Button size="sm" onClick={() => { handleAssignToWorker(assignIssue.id, w.name); setAssignIssue(null); }}>Assign</Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Worker Dialog */}
+      <Dialog open={addWorkerOpen} onOpenChange={setAddWorkerOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Worker</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="wname">Full Name</Label>
+              <Input id="wname" value={newWorker.name} onChange={(e) => setNewWorker({ ...newWorker, name: e.target.value })} placeholder="Enter worker name" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="wrole">Role</Label>
+              <Input id="wrole" value={newWorker.role} onChange={(e) => setNewWorker({ ...newWorker, role: e.target.value })} placeholder="e.g., Road Technician" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="wmax">Max Load</Label>
+              <Input id="wmax" type="number" min={1} max={10} value={newWorker.maxLoad} onChange={(e) => setNewWorker({ ...newWorker, maxLoad: Number(e.target.value || 0) })} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddWorkerOpen(false)}>Cancel</Button>
+            <Button onClick={() => {
+              if (!newWorker.name || !newWorker.role || newWorker.maxLoad <= 0) return;
+              const id = `WRK${(Math.random()*100000).toFixed(0)}`;
+              setWorkers((prev) => [
+                ...prev,
+                {
+                  id,
+                  name: newWorker.name,
+                  role: newWorker.role,
+                  currentLoad: 0,
+                  maxLoad: newWorker.maxLoad,
+                  rating: 4.5,
+                  availability: "Available",
+                  lastActive: "Online",
+                }
+              ]);
+              setNewWorker({ name: "", role: "", maxLoad: 5 });
+              setAddWorkerOpen(false);
+            }}>Add</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
