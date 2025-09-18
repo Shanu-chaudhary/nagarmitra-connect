@@ -7,9 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 // Remove lucide-react import, use inline SVGs or alternative icons if needed
-import { useAuth } from "@/hooks/useAuth";
+import { DepartmentKey, useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Inline SVG icon components to avoid external icon deps
 const Shield = (props: React.SVGProps<SVGSVGElement>) => (
@@ -65,8 +66,12 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
     pincode: "",
   });
 
-  const { login } = useAuth();
+  const { login, loginDepartment } = useAuth();
   const navigate = useNavigate();
+  const [loginTab, setLoginTab] = useState<'citizen' | 'department' | 'worker'>('citizen');
+  const [deptKey, setDeptKey] = useState<DepartmentKey>('roads');
+  const [deptUserId, setDeptUserId] = useState('');
+  const [deptPassword, setDeptPassword] = useState('');
 
   const dummyCredentials = [
     { mobile: "1234567890", otp: "123456", role: "Citizen" },
@@ -146,16 +151,36 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
     }
   };
 
+  const handleDepartmentLogin = async () => {
+    setLoading(true);
+    try {
+      const result = await loginDepartment(deptKey, deptUserId, deptPassword);
+      if (result.success && result.role) {
+        toast({ title: "Login Successful", description: "Welcome! Redirecting to department dashboard..." });
+        onOpenChange(false);
+        if (deptKey === 'municipal') navigate('/municipal');
+        else if (deptKey === 'state') navigate('/state');
+        else if (deptKey === 'sanitation') navigate('/department/health');
+        else if (deptKey === 'water') navigate('/department/water');
+        else navigate('/department');
+      } else {
+        toast({ title: "Login Failed", description: result.error || "Invalid credentials", variant: "destructive" });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-primary" />
             Access NagarMitra
           </DialogTitle>
           <DialogDescription>
-            Secure login with mobile number and OTP verification
+            Choose your login method
           </DialogDescription>
         </DialogHeader>
 
@@ -169,55 +194,97 @@ const LoginModal = ({ open, onOpenChange }: LoginModalProps) => {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Login to Your Account</CardTitle>
-                <CardDescription>
-                  Enter your registered mobile number to receive OTP
-                </CardDescription>
+                <CardDescription>Select your login method</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="mobile">Mobile Number</Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="mobile"
-                      placeholder="Enter 10-digit mobile number"
-                      value={mobile}
-                      onChange={(e) => setMobile(e.target.value)}
-                      className="pl-10"
-                      maxLength={10}
-                    />
-                  </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button variant={loginTab === 'citizen' ? 'default' : 'outline'} onClick={() => setLoginTab('citizen')}>Citizen Login</Button>
+                  <Button variant={loginTab === 'department' ? 'default' : 'outline'} onClick={() => setLoginTab('department')}>Department Login</Button>
+                  <Button variant={loginTab === 'worker' ? 'default' : 'outline'} onClick={() => setLoginTab('worker')}>Worker Login</Button>
                 </div>
 
-                {showOtp && (
-                  <div className="space-y-2 animate-fade-in">
-                    <Label htmlFor="otp">OTP</Label>
-                    <Input
-                      id="otp"
-                      placeholder="Enter 6-digit OTP"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      maxLength={6}
-                    />
-                  </div>
+                {loginTab !== 'department' && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="mobile">Mobile Number</Label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="mobile"
+                          placeholder="Enter 10-digit mobile number"
+                          value={mobile}
+                          onChange={(e) => setMobile(e.target.value)}
+                          className="pl-10"
+                          maxLength={10}
+                        />
+                      </div>
+                    </div>
+
+                    {showOtp && (
+                      <div className="space-y-2 animate-fade-in">
+                        <Label htmlFor="otp">OTP</Label>
+                        <Input
+                          id="otp"
+                          placeholder="Enter 6-digit OTP"
+                          value={otp}
+                          onChange={(e) => setOtp(e.target.value)}
+                          maxLength={6}
+                        />
+                      </div>
+                    )}
+
+                    {!showOtp ? (
+                      <Button 
+                        onClick={handleSendOtp} 
+                        className="w-full btn-government"
+                        disabled={mobile.length !== 10}
+                      >
+                        Send OTP
+                      </Button>
+                    ) : (
+                    <Button 
+                      onClick={handleLogin} 
+                      className="w-full btn-government"
+                      disabled={otp.length !== 6 || loading}
+                    >
+                      {loading ? "Verifying..." : "Verify & Login"}
+                    </Button>
+                    )}
+                  </>
                 )}
 
-                {!showOtp ? (
-                  <Button 
-                    onClick={handleSendOtp} 
-                    className="w-full btn-government"
-                    disabled={mobile.length !== 10}
-                  >
-                    Send OTP
-                  </Button>
-                ) : (
-                <Button 
-                  onClick={handleLogin} 
-                  className="w-full btn-government"
-                  disabled={otp.length !== 6 || loading}
-                >
-                  {loading ? "Verifying..." : "Verify & Login"}
-                </Button>
+                {loginTab === 'department' && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Department</Label>
+                      <Select value={deptKey} onValueChange={(v) => setDeptKey(v as DepartmentKey)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="roads">Roads & Infrastructure</SelectItem>
+                          <SelectItem value="sanitation">Health & Sanitation</SelectItem>
+                          <SelectItem value="water">Water Department</SelectItem>
+                          <SelectItem value="municipal">Municipal Department</SelectItem>
+                          <SelectItem value="state">State Department</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="deptUser">User ID</Label>
+                      <Input id="deptUser" placeholder="Enter User ID" value={deptUserId} onChange={(e) => setDeptUserId(e.target.value)} />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="deptPass">Password</Label>
+                      <Input id="deptPass" type="password" placeholder="Enter Password" value={deptPassword} onChange={(e) => setDeptPassword(e.target.value)} />
+                    </div>
+
+                    <Button className="w-full btn-government" disabled={!deptUserId || !deptPassword || loading} onClick={handleDepartmentLogin}>
+                      {loading ? 'Signing in...' : 'Login'}
+                    </Button>
+                  </>
                 )}
               </CardContent>
             </Card>
