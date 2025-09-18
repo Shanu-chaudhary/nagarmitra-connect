@@ -1,6 +1,6 @@
 import {Button} from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, User, Bell, Shield } from "lucide-react";
+import { LogOut, User, Bell } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
@@ -37,7 +37,7 @@ const DashboardHeader = ({ title, userRole }: DashboardHeaderProps) => {
         {/* Logo & Title */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
-            <Shield className="h-6 w-6 text-primary" />
+            <img src="/nagarmitra-logo.png" alt="NagarMitra" className="h-6 w-6" />
             <span className="text-lg font-bold text-foreground">NagarMitra</span>
           </div>
           <div className="h-4 w-px bg-border hidden sm:block" />
@@ -56,50 +56,24 @@ const DashboardHeader = ({ title, userRole }: DashboardHeaderProps) => {
 
         {/* User Actions */}
         <div className="flex items-center space-x-4">
-          {user && (
-            <>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center space-x-2 text-sm text-foreground border border-border rounded px-2 py-1 hover:bg-secondary">
-                    <Avatar className="h-6 w-6">
-                      <AvatarFallback className="text-xs">
-                        {user.name.split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="hidden sm:inline">Profile</span>
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel className="max-w-[220px] truncate">{user.name}</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    View Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    Notifications
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              
-              <Button variant="ghost" size="sm">
-                <Bell className="h-4 w-4" />
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={handleLogout}
-                className="flex items-center space-x-2"
-              >
-                <LogOut className="h-4 w-4" />
-                <span className="hidden sm:inline">Logout</span>
-              </Button>
-            </>
-          )}
+          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+            <User className="h-4 w-4" />
+            <span className="hidden sm:inline">{user?.name ?? "Citizen"}</span>
+          </div>
+          
+          <Button variant="ghost" size="sm" aria-label="Notifications">
+            <Bell className="h-4 w-4" />
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleLogout}
+            className="flex items-center space-x-2"
+          >
+            <LogOut className="h-4 w-4" />
+            <span className="hidden sm:inline">Logout</span>
+          </Button>
         </div>
       </div>
     </header>

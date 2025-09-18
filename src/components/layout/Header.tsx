@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import logo from "@/assets/nagarmitra-logo.png";
 import { Shield, Menu } from "lucide-react";
 
 interface HeaderProps {
@@ -13,7 +14,12 @@ const Header = ({ onLoginClick }: HeaderProps) => {
         {/* Logo */}
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-2">
-            <Shield className="h-8 w-8 text-primary" />
+          <img 
+      src={logo} 
+      alt="NagarMitra Logo" 
+      className="h-8 w-8 object-contain" 
+    />
+
             <span className="text-2xl font-bold text-foreground">NagarMitra</span>
           </div>
           <Badge variant="secondary" className="hidden sm:flex">

@@ -1,8 +1,9 @@
+import { useRef, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import DashboardHeader from "@/components/layout/DashboardHeader";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   HardHat, 
   CheckCircle, 
@@ -10,181 +11,438 @@ import {
   Camera, 
   MapPin,
   FileText,
-  Upload
+	AlertTriangle,
+	Calendar,
+	User as UserIcon,
+	Info
 } from "lucide-react";
 
+type Priority = "High" | "Medium" | "Low";
+
+type Task = {
+	id: string;
+	title: string;
+	description: string;
+	location: string;
+	deadline: string;
+	citizen: string;
+	priority: Priority;
+	status: "Assigned" | "In Progress" | "Completed";
+	beforeImage?: string; // object URL
+	afterImage?: string; // object URL
+	acknowledgedAt?: string;
+	completedAt?: string;
+};
+
 const WorkerDashboardPage = () => {
-  const assignedTasks = [
-    {
-      id: "TASK001",
+	const [activeTab, setActiveTab] = useState<"new" | "inprogress" | "completed">("new");
+	const [detailsOpen, setDetailsOpen] = useState(false);
+	const [detailsTask, setDetailsTask] = useState<Task | null>(null);
+
+	// Initial demo tasks
+	const [newTasks, setNewTasks] = useState<Task[]>([
+		{
+			id: "TASK1001",
+			title: "Streetlight Repair",
+			priority: "Medium",
+			description:
+				"The main streetlight in the colony has been non-functional for 3 days. Check bulb and wiring.",
+			location: "Sector 2, Ward 15",
+			deadline: "24/12/2024",
+			citizen: "Sunita Devi",
+			status: "Assigned"
+		},
+		{
+			id: "TASK2001",
+			title: "Garbage Overflow Cleanup",
+			priority: "High",
+			description: "Overflowing bin near market area. Immediate cleaning required.",
+			location: "Market Road, Ward 8",
+			deadline: "Today 5:00 PM",
+			citizen: "Ravi Kumar",
+			status: "Assigned"
+		},
+		{
+			id: "TASK2002",
+			title: "Water Pipe Leakage",
+			priority: "High",
+			description: "Leak detected causing water on the road. Needs repair.",
+			location: "Near Community Hall, Ward 9",
+			deadline: "Tomorrow 11:00 AM",
+			citizen: "Priya Singh",
+			status: "Assigned"
+		},
+		{
+			id: "TASK2003",
+			title: "Park Bench Repair",
+			priority: "Low",
+			description: "Broken bench slat in the central park. Replace slat and tighten screws.",
+			location: "Central Park, Ward 3",
+			deadline: "28/12/2024",
+			citizen: "Neha Verma",
+			status: "Assigned"
+		}
+	]);
+	const [inProgressTasks, setInProgressTasks] = useState<Task[]>([
+		{
+			id: "TASK1002",
       title: "Fix Pothole on MG Road",
+			priority: "High",
+			description: "Large pothole causing traffic issues",
       location: "MG Road, Ward 12",
-      priority: "High",
-      assignedTime: "2 hours ago",
       deadline: "Today 6:00 PM",
-      status: "Acknowledged",
-      description: "Large pothole causing traffic issues"
-    },
-    {
-      id: "TASK002",
-      title: "Install Street Light",
-      location: "Station Road, Ward 15",
+			citizen: "Ajay Kumar",
+			status: "In Progress",
+			beforeImage: undefined
+		},
+		{
+			id: "TASK2004",
+			title: "Street Sign Replacement",
+			priority: "Medium",
+			description: "Damaged street name sign needs replacement.",
+			location: "School Street, Ward 10",
+			deadline: "Tomorrow 4:00 PM",
+			citizen: "Suman Rao",
+			status: "In Progress",
+			beforeImage: undefined
+		},
+		{
+			id: "TASK2005",
+			title: "Drain Cleaning",
       priority: "Medium",
-      assignedTime: "1 day ago",
-      deadline: "Tomorrow 5:00 PM",
+			description: "Clogged drain causing foul smell and overflow.",
+			location: "Lane 5, Ward 6",
+			deadline: "Today 7:00 PM",
+			citizen: "Imran Ali",
+			status: "In Progress",
+			beforeImage: undefined
+		}
+	]);
+	const [completedTasks, setCompletedTasks] = useState<Task[]>([
+		{
+			id: "TASK1999",
+			title: "Tree Pruning",
+			priority: "Low",
+			description: "Overgrown branches near electric lines trimmed.",
+			location: "Temple Road, Ward 2",
+			deadline: "Yesterday",
+			citizen: "Geeta Sharma",
+			status: "Completed",
+			beforeImage: "/placeholder.svg",
+			afterImage: "/placeholder.svg",
+			acknowledgedAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toLocaleString(),
+			completedAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toLocaleString()
+		}
+	]);
+
+	// Camera capture handling
+	const fileInputRef = useRef<HTMLInputElement>(null);
+	const [captureFor, setCaptureFor] = useState<{ type: "before" | "after"; taskId: string } | null>(null);
+
+	const triggerCamera = (type: "before" | "after", taskId: string) => {
+		setCaptureFor({ type, taskId });
+		fileInputRef.current?.click();
+	};
+
+	const openDetails = (task: Task) => {
+		setDetailsTask(task);
+		setDetailsOpen(true);
+	};
+
+	const handleCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file || !captureFor) return;
+		const url = URL.createObjectURL(file);
+
+		if (captureFor.type === "before") {
+			// Acknowledge: attach before image and move task to In Progress
+			setNewTasks((prev) => {
+				const t = prev.find((x) => x.id === captureFor.taskId);
+				if (!t) return prev;
+				const remaining = prev.filter((x) => x.id !== captureFor.taskId);
+				const moved: Task = {
+					...t,
+					beforeImage: url,
       status: "In Progress",
-      description: "New street light installation required"
-    }
-  ];
+					acknowledgedAt: new Date().toLocaleString()
+				};
+				setInProgressTasks((cur) => [moved, ...cur]);
+				setActiveTab("inprogress");
+				return remaining;
+			});
+		} else {
+			// After image on in-progress task
+			setInProgressTasks((prev) =>
+				prev.map((t) => (t.id === captureFor.taskId ? { ...t, afterImage: url } : t))
+			);
+		}
+
+		// reset input
+		e.currentTarget.value = "";
+		setCaptureFor(null);
+	};
+
+	const markDone = (taskId: string) => {
+		const task = inProgressTasks.find((t) => t.id === taskId);
+		if (!task || !task.beforeImage || !task.afterImage) return;
+		setInProgressTasks((prev) => prev.filter((t) => t.id !== taskId));
+		setCompletedTasks((prev) => [
+			{ ...task, status: "Completed", completedAt: new Date().toLocaleString() },
+			...prev,
+		]);
+		setActiveTab("completed");
+	};
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Acknowledged": return "warning";
-      case "In Progress": return "primary";
-      case "Completed": return "success";
-      default: return "secondary";
-    }
-  };
+			case "Assigned":
+				return "primary";
+			case "In Progress":
+				return "warning";
+			case "Completed":
+				return "success";
+			default:
+				return "secondary";
+		}
+	};
 
-  return (
-    <div className="min-h-screen bg-background">
-      <DashboardHeader title="Field Worker Dashboard" userRole="Field Worker" />
-      
-      <div className="container mx-auto max-w-4xl p-6">
-        {/* Header Actions */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground flex items-center gap-3">
-              <HardHat className="h-6 w-6 text-primary" />
-              My Tasks
-            </h2>
-            <p className="text-muted-foreground">Your assigned tasks and work progress</p>
-          </div>
-          <Badge variant="outline" className="bg-success/10 text-success border-success">
-            Active Worker
+	const StatCard = ({ icon: Icon, value, label, color }: { icon: any; value: number | string; label: string; color: string }) => (
+		<Card className="government-card text-center">
+			<CardContent className="p-6">
+				<Icon className={`h-8 w-8 text-${color} mx-auto mb-2`} />
+				<div className="text-2xl font-bold text-foreground">{value}</div>
+				<div className="text-sm text-muted-foreground">{label}</div>
+			</CardContent>
+		</Card>
+	);
+
+	const NewTaskCard = (t: Task) => (
+		<Card key={t.id} className="border-border">
+			<CardContent className="p-4">
+				<div className="flex items-start justify-between">
+					<div className="space-y-2">
+						<div className="flex items-center gap-3">
+							<h3 className="font-semibold text-foreground">{t.title}</h3>
+							<Badge variant="outline">{t.id}</Badge>
+							<Badge variant="secondary" className={`text-xs ${t.priority === "High" ? "bg-danger/10 text-danger border-danger/30" : "bg-warning/10 text-warning border-warning/30"}`}>
+								{t.priority} Priority
           </Badge>
+						</div>
+						<p className="text-sm text-muted-foreground max-w-3xl">{t.description}</p>
+						<div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+							<span className="flex items-center"><MapPin className="h-3.5 w-3.5 mr-1" /> {t.location}</span>
+							<span className="flex items-center"><Calendar className="h-3.5 w-3.5 mr-1" /> Deadline: {t.deadline}</span>
+							<span className="flex items-center"><UserIcon className="h-3.5 w-3.5 mr-1" /> Citizen: {t.citizen}</span>
+						</div>
+					</div>
+					<Badge variant="outline" className={`rounded-full px-3 py-1 text-xs bg-muted/50 status-${getStatusColor(t.status)}`}>{t.status}</Badge>
+				</div>
+
+				<div className="mt-4 flex items-center gap-3 flex-wrap">
+					<Button className="btn-government" size="sm" onClick={() => triggerCamera("before", t.id)}>
+						<Camera className="mr-2 h-4 w-4" /> Acknowledge Task • Capture Before Photo
+					</Button>
+					<Button variant="outline" size="sm" onClick={() => openDetails(t)}>
+						<Info className="mr-2 h-4 w-4" /> View Details
+					</Button>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="government-card">
-            <CardContent className="p-6 text-center">
-              <Clock className="h-8 w-8 text-warning mx-auto mb-2" />
-              <div className="text-2xl font-bold text-foreground">2</div>
-              <div className="text-sm text-muted-foreground">Pending Tasks</div>
+				<div className="mt-4 rounded-md border border-danger/30 bg-danger/10 p-3 text-danger text-sm flex items-start gap-2">
+					<AlertTriangle className="h-4 w-4 mt-0.5" />
+					<span>Warning: Deadline is tomorrow! Please complete soon.</span>
+				</div>
             </CardContent>
           </Card>
-          
-          <Card className="government-card">
-            <CardContent className="p-6 text-center">
-              <CheckCircle className="h-8 w-8 text-success mx-auto mb-2" />
-              <div className="text-2xl font-bold text-foreground">12</div>
-              <div className="text-sm text-muted-foreground">Completed This Week</div>
-            </CardContent>
-          </Card>
-          
-          <Card className="government-card">
-            <CardContent className="p-6 text-center">
-              <FileText className="h-8 w-8 text-primary mx-auto mb-2" />
-              <div className="text-2xl font-bold text-foreground">4.8</div>
-              <div className="text-sm text-muted-foreground">Average Rating</div>
-            </CardContent>
-          </Card>
-        </div>
+	);
 
-        {/* Assigned Tasks */}
-        <Card className="government-card">
+	const InProgressCard = (t: Task) => (
+		<Card key={t.id} className="border-border">
+			<CardContent className="p-4">
+				<div className="flex items-start justify-between">
+					<div className="space-y-2">
+						<div className="flex items-center gap-3">
+							<h3 className="font-semibold text-foreground">{t.title}</h3>
+							<Badge variant="outline">{t.id}</Badge>
+							<Badge className={`status-${getStatusColor(t.status)}`}>{t.status}</Badge>
+						</div>
+						<p className="text-sm text-muted-foreground max-w-3xl">{t.description}</p>
+						<div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+							<span className="flex items-center"><MapPin className="h-3.5 w-3.5 mr-1" /> {t.location}</span>
+							<span className="flex items-center"><Calendar className="h-3.5 w-3.5 mr-1" /> Deadline: {t.deadline}</span>
+							<span className="flex items-center"><UserIcon className="h-3.5 w-3.5 mr-1" /> Citizen: {t.citizen}</span>
+						</div>
+					</div>
+					<Button variant="outline" size="sm" onClick={() => openDetails(t)}>
+						<Info className="mr-2 h-4 w-4" /> View Details
+					</Button>
+				</div>
+
+				{/* Photo previews */}
+				<div className="mt-4 grid grid-cols-2 gap-3">
+					<div className="border rounded-md p-2">
+						<p className="text-xs text-muted-foreground mb-2">Before Photo</p>
+						{t.beforeImage ? (
+							<img src={t.beforeImage} alt="Before" className="w-full h-32 object-cover rounded" />
+						) : (
+							<div className="h-32 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">Not captured</div>
+						)}
+					</div>
+					<div className="border rounded-md p-2">
+						<p className="text-xs text-muted-foreground mb-2">After Photo</p>
+						{t.afterImage ? (
+							<img src={t.afterImage} alt="After" className="w-full h-32 object-cover rounded" />
+						) : (
+							<div className="h-32 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">Pending</div>
+						)}
+					</div>
+				</div>
+
+				<div className="mt-4 flex items-center gap-3">
+					<Button variant="outline" size="sm" onClick={() => triggerCamera("after", t.id)}>
+						<Camera className="mr-2 h-4 w-4" /> Capture After Photo
+					</Button>
+					<Button size="sm" className="btn-government" disabled={!t.beforeImage || !t.afterImage} onClick={() => markDone(t.id)}>
+						<CheckCircle className="mr-2 h-4 w-4" /> Mark Done
+					</Button>
+				</div>
+            </CardContent>
+          </Card>
+	);
+
+	const CompletedCard = (t: Task) => (
+		<Card key={t.id} className="border-border">
           <CardHeader>
-            <CardTitle>My Assigned Tasks</CardTitle>
-            <CardDescription>Complete tasks and upload proof of work</CardDescription>
+				<CardTitle className="text-lg">{t.title}</CardTitle>
+				<CardDescription>{t.description}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {assignedTasks.map((task) => (
-              <div key={task.id} className="border border-border rounded-lg p-4 space-y-4">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-3">
-                      <h3 className="font-semibold text-foreground">{task.title}</h3>
-                      <Badge variant="outline">{task.id}</Badge>
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div>
+						<p className="text-sm text-muted-foreground mb-2">Before</p>
+						{t.beforeImage ? (
+							<img src={t.beforeImage} alt="Before" className="w-full h-48 object-cover rounded" />
+						) : (
+							<div className="h-48 bg-muted rounded" />
+						)}
+					</div>
+					<div>
+						<p className="text-sm text-muted-foreground mb-2">After</p>
+						{t.afterImage ? (
+							<img src={t.afterImage} alt="After" className="w-full h-48 object-cover rounded" />
+						) : (
+							<div className="h-48 bg-muted rounded" />
+						)}
+					</div>
                     </div>
                     
-                    <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                      <span className="flex items-center">
-                        <MapPin className="h-3 w-3 mr-1" />
-                        {task.location}
-                      </span>
-                      <Badge className={`status-${task.priority === 'High' ? 'danger' : 'warning'}`}>
-                        {task.priority} Priority
-                      </Badge>
-                      <Badge className={`status-${getStatusColor(task.status)}`}>
-                        {task.status}
-                      </Badge>
+				<div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+					<div className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {t.location}</div>
+					<div className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Deadline: {t.deadline}</div>
+					<div className="flex items-center gap-2"><UserIcon className="h-4 w-4" /> Citizen: {t.citizen}</div>
+					<div className="flex items-center gap-2"><Clock className="h-4 w-4" /> Completed: {t.completedAt}</div>
                     </div>
 
-                    <p className="text-sm text-muted-foreground">{task.description}</p>
-                    
-                    <div className="flex items-center space-x-4 text-sm">
-                      <span>Assigned: {task.assignedTime}</span>
-                      <span className="text-danger">Deadline: {task.deadline}</span>
+				<div className="flex justify-end">
+					<Button variant="outline" size="sm" onClick={() => openDetails(t)}>
+						<Info className="mr-2 h-4 w-4" /> View Details
+					</Button>
+				</div>
+			</CardContent>
+		</Card>
+	);
+
+	return (
+		<div className="min-h-screen bg-gradient-to-b from-background via-background to-background">
+			<DashboardHeader title="Field Worker Dashboard" userRole="Field Worker" />
+
+			{/* Hero */}
+			<div className="bg-gradient-to-r from-emerald-50 via-sky-50 to-blue-50 border-b border-border">
+				<div className="container mx-auto max-w-6xl px-6 py-8">
+					<div className="flex items-center justify-between">
+						<div className="flex items-center gap-3">
+							<HardHat className="h-7 w-7 text-primary" />
+							<div>
+								<h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">My Tasks</h2>
+								<p className="text-muted-foreground">Assigned work, progress and deadlines</p>
+							</div>
+						</div>
+						<Badge variant="outline" className="bg-success/10 text-success border-success">Active Worker</Badge>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex space-x-2">
-                  {task.status === "Acknowledged" && (
-                    <Button variant="outline" size="sm">
-                      <Clock className="mr-2 h-4 w-4" />
-                      Start Work
-                    </Button>
-                  )}
-                  
-                  {task.status === "In Progress" && (
-                    <>
-                      <Button variant="outline" size="sm">
-                        <Camera className="mr-2 h-4 w-4" />
-                        Upload Before Photo
-                      </Button>
-                      <Button className="btn-government" size="sm">
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        Mark Complete
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+			<div className="container mx-auto max-w-6xl p-6">
+				{/* Stats */}
+				<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+					<StatCard icon={Clock} value={newTasks.length} label="New Tasks" color="warning" />
+					<StatCard icon={FileText} value={inProgressTasks.length} label="In Progress" color="primary" />
+					<StatCard icon={CheckCircle} value={completedTasks.length} label="Completed" color="success" />
+				</div>
 
-        {/* Work Proof Upload */}
-        <Card className="government-card">
-          <CardHeader>
-            <CardTitle>Upload Work Proof</CardTitle>
-            <CardDescription>Upload before and after photos as proof of completion</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-                <Camera className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-sm text-muted-foreground mb-4">Before Work Photo</p>
-                <Button variant="outline" size="sm">
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload Photo
-                </Button>
+				{/* Tabs */}
+				<div className="mb-4 flex items-center gap-2">
+					<Button variant={activeTab === "new" ? "default" : "outline"} className={activeTab === "new" ? "btn-government" : ""} onClick={() => setActiveTab("new")}>
+						New Tasks ({newTasks.length})
+                    </Button>
+					<Button variant={activeTab === "inprogress" ? "default" : "outline"} className={activeTab === "inprogress" ? "btn-government" : ""} onClick={() => setActiveTab("inprogress")}>
+						In Progress ({inProgressTasks.length})
+                      </Button>
+					<Button variant={activeTab === "completed" ? "default" : "outline"} className={activeTab === "completed" ? "btn-government" : ""} onClick={() => setActiveTab("completed")}>
+						Completed ({completedTasks.length})
+                      </Button>
+                </div>
+
+				{/* Task Lists */}
+				<div className="space-y-4">
+					{activeTab === "new" && (newTasks.length ? newTasks.map(NewTaskCard) : <p className="text-sm text-muted-foreground">No new tasks.</p>)}
+					{activeTab === "inprogress" && (inProgressTasks.length ? inProgressTasks.map(InProgressCard) : <p className="text-sm text-muted-foreground">No tasks in progress.</p>)}
+					{activeTab === "completed" && (completedTasks.length ? completedTasks.map(CompletedCard) : <p className="text-sm text-muted-foreground">No completed tasks yet.</p>)}
+              </div>
+
+				{/* Hidden camera input for mobile capture */}
+				<input
+					ref={fileInputRef}
+					type="file"
+					accept="image/*"
+					capture="environment"
+					className="hidden"
+					onChange={handleCapture}
+				/>
               </div>
               
-              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-                <CheckCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-sm text-muted-foreground mb-4">After Work Photo</p>
-                <Button variant="outline" size="sm">
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload Photo
-                </Button>
+			{/* Task Details Dialog */}
+			<Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+				<DialogContent className="sm:max-w-lg">
+					<DialogHeader>
+						<DialogTitle>{detailsTask?.title}</DialogTitle>
+						<DialogDescription>{detailsTask?.id}</DialogDescription>
+					</DialogHeader>
+					{detailsTask && (
+						<div className="space-y-4">
+							<p className="text-sm text-muted-foreground">{detailsTask.description}</p>
+							<div className="grid grid-cols-2 gap-3 text-sm">
+								<div className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {detailsTask.location}</div>
+								<div className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Deadline: {detailsTask.deadline}</div>
+								<div className="flex items-center gap-2"><UserIcon className="h-4 w-4" /> Citizen: {detailsTask.citizen}</div>
+								{detailsTask.acknowledgedAt && (<div className="flex items-center gap-2"><Clock className="h-4 w-4" /> Acknowledged: {detailsTask.acknowledgedAt}</div>)}
+								{detailsTask.completedAt && (<div className="flex items-center gap-2"><CheckCircle className="h-4 w-4" /> Completed: {detailsTask.completedAt}</div>)}
+							</div>
+							{(detailsTask.beforeImage || detailsTask.afterImage) && (
+								<div className="grid grid-cols-2 gap-3">
+									<div>
+										<p className="text-xs text-muted-foreground mb-1">Before</p>
+										{detailsTask.beforeImage ? <img src={detailsTask.beforeImage} className="w-full h-32 object-cover rounded" /> : <div className="h-32 bg-muted rounded" />}
+									</div>
+									<div>
+										<p className="text-xs text-muted-foreground mb-1">After</p>
+										{detailsTask.afterImage ? <img src={detailsTask.afterImage} className="w-full h-32 object-cover rounded" /> : <div className="h-32 bg-muted rounded" />}
               </div>
             </div>
-          </CardContent>
-        </Card>
+							)}
       </div>
+					)}
+				</DialogContent>
+			</Dialog>
     </div>
   );
 };

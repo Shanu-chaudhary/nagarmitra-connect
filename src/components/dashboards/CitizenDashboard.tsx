@@ -8,6 +8,7 @@ import IssueReportModal from "@/components/issues/IssueReportModal";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { 
   Plus, 
   MapPin, 
@@ -166,11 +167,11 @@ const CitizenDashboard = () => {
       <DashboardHeader title="Citizen Dashboard" userRole="Citizen" />
       
       {/* Hero Banner */}
-      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border-b border-border">
+      <div className="bg-gradient-to-r from-emerald-50 via-sky-50 to-blue-50 border-b border-border">
         <div className="container mx-auto max-w-6xl px-6 py-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs text-primary">
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs text-primary ring-1 ring-primary/20">
                 <Sparkles className="h-3.5 w-3.5" />
                 Empowering Citizens
               </div>
@@ -193,7 +194,7 @@ const CitizenDashboard = () => {
         </div>
       </div>
       
-      <div className="container mx-auto max-w-6xl p-6">
+      <div className="container mx-auto max-w-6xl p-6 section-soft">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (
@@ -215,43 +216,29 @@ const CitizenDashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <Card className="government-card">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Report issues through multiple channels</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button variant="outline" className="h-24 flex items-center justify-center gap-3 hover-scale rounded-xl">
-                <span className="p-2 rounded-lg bg-primary/10">
-                  <Camera className="h-6 w-6 text-primary" />
-                </span>
-                <div className="text-left">
-                  <div className="font-medium">Upload Photo</div>
-                  <div className="text-xs text-muted-foreground">Snap and report instantly</div>
-                </div>
-              </Button>
-              <Button variant="outline" className="h-24 flex items-center justify-center gap-3 hover-scale rounded-xl">
-                <span className="p-2 rounded-lg bg-primary/10">
-                  <Phone className="h-6 w-6 text-primary" />
-                </span>
-                <div className="text-left">
-                  <div className="font-medium">IVRS Call</div>
-                  <div className="text-xs text-muted-foreground">Report via hotline</div>
-                </div>
-              </Button>
-              <Button variant="outline" className="h-24 flex items-center justify-center gap-3 hover-scale rounded-xl">
-                <span className="p-2 rounded-lg bg-primary/10">
-                  <FileText className="h-6 w-6 text-primary" />
-                </span>
-                <div className="text-left">
-                  <div className="font-medium">Text Report</div>
-                  <div className="text-xs text-muted-foreground">Describe the issue</div>
-                </div>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+{/* Quick Actions */}
+<Card className="government-card">
+  <CardHeader className="flex flex-row items-center justify-between py-3">
+    <div>
+      <CardTitle className="text-lg">Quick Actions</CardTitle>
+      <CardDescription className="text-sm">
+        Start a report instantly
+      </CardDescription>
+    </div>
+
+    {/* Report via Call Button */}
+    <Button
+      asChild
+      className="h-12 w-48 rounded-lg bg-primary text-white hover:bg-primary/90 flex items-center justify-center gap-2"
+    >
+      <a href="tel:+1800123456" aria-label="Report via Call">
+        <Phone className="h-5 w-5" />
+        <span className="text-sm font-medium">Report via Call</span>
+      </a>
+    </Button>
+  </CardHeader>
+</Card>
+
 
         {/* My Complaints */}
         <Card className="government-card mt-6">
@@ -552,38 +539,35 @@ const CitizenDashboard = () => {
       </Dialog>
 
       {/* Chatbot Floating Button */}
-      <Button onClick={() => setChatOpen(true)} className="fixed bottom-6 right-6 rounded-full h-16 w-16 p-0 shadow-lg btn-government" aria-label="Open AI Assistant">
+      <Button onClick={() => setChatOpen(true)} className="fixed bottom-6 right-6 rounded-full h-12 w-12 p-0 shadow-lg btn-government" aria-label="Open AI Assistant">
         <Bot className="h-6 w-6" />
       </Button>
 
-      {/* Chatbot Dialog */}
-      <Dialog open={chatOpen} onOpenChange={setChatOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Bot className="h-5 w-5 text-primary" /> Citizen AI Assistant</DialogTitle>
-            <DialogDescription>Ask about reporting, tracking, or departments. This is a demo UI.</DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col h-80">
-            <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-              {chatMessages.map((m, idx) => (
-                <div key={idx} className={`max-w-[85%] rounded-lg p-3 text-sm ${m.role === 'assistant' ? 'bg-muted self-start' : 'bg-primary text-primary-foreground self-end ml-auto'}`}>
-                  {m.content}
-                </div>
-              ))}
-            </div>
-            <div className="mt-3 flex items-center gap-2">
-              <input
-                className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
-                placeholder="Type your question..."
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleChatSend(); }}
-              />
-              <Button onClick={handleChatSend} className="btn-government">Send</Button>
-            </div>
+      {/* Chatbot Sidebar */}
+      <Sheet open={chatOpen} onOpenChange={setChatOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-md flex flex-col">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2"><Bot className="h-5 w-5 text-primary" /> Citizen AI Assistant</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4 flex-1 overflow-y-auto space-y-3 pr-2">
+            {chatMessages.map((m, idx) => (
+              <div key={idx} className={`max-w-[85%] rounded-lg p-3 text-sm ${m.role === 'assistant' ? 'bg-muted self-start' : 'bg-primary text-primary-foreground self-end ml-auto'}`}>
+                {m.content}
+              </div>
+            ))}
           </div>
-        </DialogContent>
-      </Dialog>
+          <div className="mt-3 flex items-center gap-2">
+            <input
+              className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+              placeholder="Type your question..."
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleChatSend(); }}
+            />
+            <Button onClick={handleChatSend} className="btn-government">Send</Button>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Issue Report Modal */}
       <IssueReportModal 
