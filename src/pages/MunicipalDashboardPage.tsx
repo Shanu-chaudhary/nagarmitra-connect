@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import DashboardHeader from "@/components/layout/DashboardHeader";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Shield, 
   TrendingUp, 
@@ -15,8 +16,11 @@ import {
   MapPin,
   Calendar
 } from "lucide-react";
+import { useState } from "react";
 
 const MunicipalDashboardPage = () => {
+  const [activeSection, setActiveSection] = useState<"city" | "performance" | "escalations" | "analytics">("city");
+
   const cityStats = [
     { label: "Total Issues", value: "1,247", change: "+8%", icon: Shield, color: "primary" },
     { label: "Resolved This Month", value: "892", change: "+15%", icon: CheckCircle, color: "success" },
@@ -57,7 +61,7 @@ const MunicipalDashboardPage = () => {
     <div className="min-h-screen bg-background">
       <DashboardHeader title="Municipal Control Center" userRole="Municipal Authority" />
       
-      <div className="container mx-auto max-w-6xl p-6">
+      <div className="w-full px-6">
         {/* Header Actions */}
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -102,144 +106,184 @@ const MunicipalDashboardPage = () => {
           ))}
         </div>
 
-        {/* City-wide Map */}
-        <Card className="government-card">
-          <CardHeader>
-            <CardTitle>City-wide Issue Distribution</CardTitle>
-            <CardDescription>Interactive map showing issue density across all wards</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-96 bg-muted rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <MapPin className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                <p className="text-lg text-muted-foreground">City-wide Interactive Map</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Heatmap showing issue density by ward<br />
-                  Color-coded pins for different departments and priority levels
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Department Performance */}
-        <Card className="government-card">
-          <CardHeader>
-            <CardTitle>Department Performance Overview</CardTitle>
-            <CardDescription>Track efficiency and SLA compliance across all departments</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {departmentPerformance.map((dept, index) => (
-                <div key={index} className="border border-border rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-semibold text-foreground">{dept.name}</h3>
-                      <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-1">
-                        <span>Resolved: {dept.resolved}</span>
-                        <span>Pending: {dept.pending}</span>
-                        <span>Rating: {dept.rating}★</span>
-                      </div>
-                    </div>
-                    <Badge className={`status-${dept.slaCompliance >= 90 ? 'success' : dept.slaCompliance >= 80 ? 'warning' : 'danger'}`}>
-                      {dept.slaCompliance}% SLA
-                    </Badge>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>SLA Compliance</span>
-                      <span>{dept.slaCompliance}%</span>
-                    </div>
-                    <Progress value={dept.slaCompliance} className="h-2" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Escalated Issues */}
-        <Card className="government-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-danger" />
-              Escalated Issues
-            </CardTitle>
-            <CardDescription>Issues requiring municipal intervention or state escalation</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {escalatedIssues.map((issue) => (
-                <div key={issue.id} className="border border-border rounded-lg p-4 bg-danger/5">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-3">
-                        <h3 className="font-semibold text-foreground">{issue.title}</h3>
-                        <Badge variant="outline">{issue.id}</Badge>
-                        <Badge className={`status-${issue.severity === 'Critical' ? 'danger' : 'warning'}`}>
-                          {issue.severity}
-                        </Badge>
-                      </div>
-                      
-                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                        <span>{issue.department}</span>
-                        <span>{issue.ward}</span>
-                        <span>Escalated: {issue.escalatedTime}</span>
-                      </div>
-                      
-                      <p className="text-sm text-danger font-medium">
-                        Reason: {issue.reason}
-                      </p>
-                    </div>
-
-                    <div className="flex space-x-2">
-                      <Button variant="outline" size="sm">
-                        Assign Resources
-                      </Button>
-                      <Button variant="outline" size="sm" className="text-danger border-danger">
-                        Escalate to State
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Analytics Dashboard */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="government-card">
+      {/* In-body sidebar + tabbed content */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-3">
+          <Card className="sticky top-20">
             <CardHeader>
-              <CardTitle>Issue Trends</CardTitle>
-              <CardDescription>Monthly resolution trends and patterns</CardDescription>
+              <CardTitle className="text-base">Municipal</CardTitle>
+              <CardDescription>Quick navigation</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">Trend Analytics Chart</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="government-card">
-            <CardHeader>
-              <CardTitle>Ward Performance</CardTitle>
-              <CardDescription>Issue distribution and resolution rates by ward</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">Ward Comparison Chart</p>
-                </div>
-              </div>
+            <CardContent className="space-y-2">
+              <Button variant={activeSection === "city" ? "default" : "outline"} className="w-full justify-start" onClick={() => setActiveSection("city")}>
+                <MapPin className="mr-2 h-4 w-4" /> City-wide Issue Distribution
+              </Button>
+              <Button variant={activeSection === "performance" ? "default" : "outline"} className="w-full justify-start" onClick={() => setActiveSection("performance")}>
+                <Building2 className="mr-2 h-4 w-4" /> Department Performance Overview
+              </Button>
+              <Button variant={activeSection === "escalations" ? "default" : "outline"} className="w-full justify-start" onClick={() => setActiveSection("escalations")}>
+                <AlertCircle className="mr-2 h-4 w-4" /> Escalated Issues
+              </Button>
+              <Button variant={activeSection === "analytics" ? "default" : "outline"} className="w-full justify-start" onClick={() => setActiveSection("analytics")}>
+                <BarChart3 className="mr-2 h-4 w-4" /> Analytics
+              </Button>
             </CardContent>
           </Card>
         </div>
+        <div className="lg:col-span-9">
+          <Tabs value={activeSection} onValueChange={(v) => setActiveSection(v as any)} className="space-y-6">
+            <TabsList className="hidden">
+              <TabsTrigger value="city">City-wide Issue Distribution</TabsTrigger>
+              <TabsTrigger value="performance">Department Performance Overview</TabsTrigger>
+              <TabsTrigger value="escalations">Escalated Issues</TabsTrigger>
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="city">
+              <Card className="government-card">
+                <CardHeader>
+                  <CardTitle>City-wide Issue Distribution</CardTitle>
+                  <CardDescription>Interactive map showing issue density across all wards</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-96 bg-muted rounded-lg flex items-center justify-center">
+                    <div className="text-center">
+                      <MapPin className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-lg text-muted-foreground">City-wide Interactive Map</p>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Heatmap showing issue density by ward<br />
+                        Color-coded pins for different departments and priority levels
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="performance">
+              <Card className="government-card">
+                <CardHeader>
+                  <CardTitle>Department Performance Overview</CardTitle>
+                  <CardDescription>Track efficiency and SLA compliance across all departments</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {departmentPerformance.map((dept, index) => (
+                      <div key={index} className="border border-border rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="font-semibold text-foreground">{dept.name}</h3>
+                            <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-1">
+                              <span>Resolved: {dept.resolved}</span>
+                              <span>Pending: {dept.pending}</span>
+                              <span>Rating: {dept.rating}★</span>
+                            </div>
+                          </div>
+                          <Badge className={`status-${dept.slaCompliance >= 90 ? 'success' : dept.slaCompliance >= 80 ? 'warning' : 'danger'}`}>
+                            {dept.slaCompliance}% SLA
+                          </Badge>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>SLA Compliance</span>
+                            <span>{dept.slaCompliance}%</span>
+                          </div>
+                          <Progress value={dept.slaCompliance} className="h-2" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="escalations">
+              <Card className="government-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5 text-danger" />
+                    Escalated Issues
+                  </CardTitle>
+                  <CardDescription>Issues requiring municipal intervention or state escalation</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {escalatedIssues.map((issue) => (
+                      <div key={issue.id} className="border border-border rounded-lg p-4 bg-danger/5">
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-2">
+                            <div className="flex items-center space-x-3">
+                              <h3 className="font-semibold text-foreground">{issue.title}</h3>
+                              <Badge variant="outline">{issue.id}</Badge>
+                              <Badge className={`status-${issue.severity === 'Critical' ? 'danger' : 'warning'}`}>
+                                {issue.severity}
+                              </Badge>
+                            </div>
+                            
+                            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                              <span>{issue.department}</span>
+                              <span>{issue.ward}</span>
+                              <span>Escalated: {issue.escalatedTime}</span>
+                            </div>
+                            
+                            <p className="text-sm text-danger font-medium">
+                              Reason: {issue.reason}
+                            </p>
+                          </div>
+
+                          <div className="flex space-x-2">
+                            <Button variant="outline" size="sm">
+                              Assign Resources
+                            </Button>
+                            <Button variant="outline" size="sm" className="text-danger border-danger">
+                              Escalate to State
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="analytics">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="government-card">
+                  <CardHeader>
+                    <CardTitle>Issue Trends</CardTitle>
+                    <CardDescription>Monthly resolution trends and patterns</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
+                      <div className="text-center">
+                        <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <p className="text-muted-foreground">Trend Analytics Chart</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="government-card">
+                  <CardHeader>
+                    <CardTitle>Ward Performance</CardTitle>
+                    <CardDescription>Issue distribution and resolution rates by ward</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
+                      <div className="text-center">
+                        <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <p className="text-muted-foreground">Ward Comparison Chart</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
       </div>
     </div>
   );
