@@ -552,7 +552,7 @@ const CitizenDashboard = () => {
       </Dialog>
 
       {/* Chatbot Floating Button */}
-      <Button onClick={() => setChatOpen(true)} className="fixed bottom-6 right-6 rounded-full h-12 w-12 p-0 shadow-lg btn-government" aria-label="Open AI Assistant">
+      <Button onClick={() => setChatOpen(true)} className="fixed bottom-6 right-6 rounded-full h-16 w-16 p-0 shadow-lg btn-government" aria-label="Open AI Assistant">
         <Bot className="h-6 w-6" />
       </Button>
 
