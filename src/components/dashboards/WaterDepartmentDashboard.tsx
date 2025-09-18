@@ -12,6 +12,7 @@ import {
   AlertTriangle, 
   TrendingUp,
   UserPlus,
+  Users,
   FileText,
   Bell,
   BarChart3,
@@ -22,11 +23,13 @@ import { Separator } from "@/components/ui/separator";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+ 
 
 const WaterDepartmentDashboard = () => {
   const [priorityFilter, setPriorityFilter] = useState<"all" | "High" | "Medium" | "Low">("all");
   const [selectedIssue, setSelectedIssue] = useState<any | null>(null);
   const [assignIssue, setAssignIssue] = useState<any | null>(null);
+  const [activeSection, setActiveSection] = useState<"issues" | "workers" | "map" | "analytics">("issues");
 
   const departmentStats = [
     { label: "Total Issues", value: "76", icon: FileText, color: "primary", change: "+6%" },
@@ -205,14 +208,38 @@ const WaterDepartmentDashboard = () => {
           ))}
         </div>
 
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="issues" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="issues">Issue Management</TabsTrigger>
-            <TabsTrigger value="workers">Worker Management</TabsTrigger>
-            <TabsTrigger value="map">Interactive Map</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          </TabsList>
+        {/* Body layout with in-page sidebar */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-3">
+            <Card className="sticky top-20">
+              <CardHeader>
+                <CardTitle className="text-base">Department</CardTitle>
+                <CardDescription>Quick navigation</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button variant={activeSection === "issues" ? "default" : "outline"} className="w-full justify-start" onClick={() => setActiveSection("issues")}>
+                  <FileText className="mr-2 h-4 w-4" /> Issue Management
+                </Button>
+                <Button variant={activeSection === "workers" ? "default" : "outline"} className="w-full justify-start" onClick={() => setActiveSection("workers")}>
+                  <Users className="mr-2 h-4 w-4" /> Worker Management
+                </Button>
+                <Button variant={activeSection === "map" ? "default" : "outline"} className="w-full justify-start" onClick={() => setActiveSection("map")}>
+                  <MapPin className="mr-2 h-4 w-4" /> Interactive Map
+                </Button>
+                <Button variant={activeSection === "analytics" ? "default" : "outline"} className="w-full justify-start" onClick={() => setActiveSection("analytics")}>
+                  <BarChart3 className="mr-2 h-4 w-4" /> Analytics
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="lg:col-span-9">
+            <Tabs value={activeSection} onValueChange={(v) => setActiveSection(v as any)} className="space-y-6">
+              <TabsList className="hidden">
+                <TabsTrigger value="issues">Issue Management</TabsTrigger>
+                <TabsTrigger value="workers">Worker Management</TabsTrigger>
+                <TabsTrigger value="map">Interactive Map</TabsTrigger>
+                <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              </TabsList>
 
           <TabsContent value="issues" className="space-y-6">
             <Card className="government-card">
@@ -426,7 +453,9 @@ const WaterDepartmentDashboard = () => {
               </Card>
             </div>
           </TabsContent>
-        </Tabs>
+            </Tabs>
+          </div>
+        </div>
       </div>
 
       {/* View Details Dialog */}
