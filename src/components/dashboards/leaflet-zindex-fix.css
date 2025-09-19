@@ -1,0 +1,13 @@
+/* Ensures Leaflet popups and controls do not overlay modals/dialogs or other UI */
+.leaflet-container {
+  z-index: 0 !important;
+}
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom,
+.leaflet-control {
+  z-index: 0 !important;
+}
+.leaflet-popup {
+  z-index: 100 !important;
+}

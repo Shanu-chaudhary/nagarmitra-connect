@@ -23,6 +23,10 @@ import { Separator } from "@/components/ui/separator";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, Legend, PieChart, Pie, Cell } from "recharts";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
  
 
 const DepartmentDashboard = () => {
@@ -203,6 +207,66 @@ const DepartmentDashboard = () => {
 
   const handleAssignToWorker = (issueId: string, workerName: string) => {
     setAllIssues((prev) => prev.map((i) => i.id === issueId ? { ...i, worker: workerName, status: "Pending" } : i));
+  };
+
+  // Only use analytics and charts relevant to "Roads & Infrastructure" department
+
+  // Road-specific analytics data
+  const issuesPerMonth = [
+    { month: "Jan", potholes: 8, resurfacing: 3, signage: 1, resolved: 10, pending: 2 },
+    { month: "Feb", potholes: 12, resurfacing: 2, signage: 2, resolved: 13, pending: 3 },
+    { month: "Mar", potholes: 9, resurfacing: 4, signage: 1, resolved: 12, pending: 2 },
+    { month: "Apr", potholes: 15, resurfacing: 5, signage: 2, resolved: 17, pending: 5 },
+    { month: "May", potholes: 10, resurfacing: 3, signage: 1, resolved: 11, pending: 3 },
+    { month: "Jun", potholes: 14, resurfacing: 2, signage: 2, resolved: 15, pending: 3 },
+    { month: "Jul", potholes: 11, resurfacing: 3, signage: 1, resolved: 13, pending: 2 },
+    { month: "Aug", potholes: 13, resurfacing: 4, signage: 2, resolved: 15, pending: 4 },
+    { month: "Sep", potholes: 10, resurfacing: 2, signage: 1, resolved: 11, pending: 2 },
+    { month: "Oct", potholes: 12, resurfacing: 3, signage: 2, resolved: 13, pending: 3 },
+    { month: "Nov", potholes: 9, resurfacing: 2, signage: 1, resolved: 10, pending: 2 },
+    { month: "Dec", potholes: 8, resurfacing: 1, signage: 1, resolved: 9, pending: 1 },
+  ];
+
+  const roadIssueCategoryStats = [
+    { category: "Potholes", value: 133 },
+    { category: "Resurfacing", value: 38 },
+    { category: "Signage", value: 17 },
+  ];
+
+  // Marker icons for map
+  const markerIcons: Record<string, L.Icon> = {
+    New: new L.Icon({
+      iconUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-shadow.png",
+      shadowSize: [41, 41],
+    }),
+    Pending: new L.Icon({
+      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-shadow.png",
+      shadowSize: [41, 41],
+    }),
+    "In Progress": new L.Icon({
+      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-shadow.png",
+      shadowSize: [41, 41],
+    }),
+    Resolved: new L.Icon({
+      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-shadow.png",
+      shadowSize: [41, 41],
+    }),
   };
 
   return (
@@ -449,16 +513,88 @@ const DepartmentDashboard = () => {
                 <CardDescription>View all issues in your department's area of responsibility</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-96 bg-muted rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <MapPin className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-lg text-muted-foreground">Interactive Department Map</p>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Color-coded pins showing issue status and priority<br />
-                      Click pins to view details and assign workers
-                    </p>
-                  </div>
-                </div>
+                <div className="h-[28rem] rounded-lg overflow-hidden">
+          <MapContainer
+            center={[23.2599, 77.4126]}
+            zoom={13}
+            style={{ height: "100%", width: "100%" }}
+            dragging={true}
+            doubleClickZoom={true}
+            scrollWheelZoom={true}
+            touchZoom={true}
+            boxZoom={true}
+            keyboard={true}
+            zoomControl={true}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            {allIssues
+              .filter((issue) => issue.location && issue.status)
+              .map((issue) =>
+                issue.location && issue.status && issue.id ? (
+                  <Marker
+                    key={issue.id}
+                    position={
+                      // Demo: randomize marker positions near Bhopal for demo
+                      [
+                        23.2599 + Math.random() * 0.01 - 0.005,
+                        77.4126 + Math.random() * 0.01 - 0.005,
+                      ]
+                    }
+                    icon={markerIcons[issue.status as keyof typeof markerIcons] as L.Icon}
+                  >
+                    <Popup>
+                      <div>
+                        <strong>{issue.title}</strong>
+                        <br />
+                        Status: {issue.status}
+                        <br />
+                        Priority: {issue.priority}
+                        <br />
+                        Location: {issue.location}
+                        <br />
+                        <Button
+                          size="sm"
+                          className="mt-2 btn-government"
+                          onClick={() => setSelectedIssue(issue)}
+                        >
+                          View Details
+                        </Button>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ) : null
+              )}
+          </MapContainer>
+        </div>
+        <div className="flex gap-4 mt-3 text-xs items-center">
+          <span className="flex items-center gap-1">
+            <img
+              src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png"
+              alt="Resolved"
+              className="w-4 h-6 inline"
+            />
+            <span className="text-success">Resolved</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <img
+              src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png"
+              alt="Pending"
+              className="w-4 h-6 inline"
+            />
+            <span className="text-warning">Pending</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <img
+              src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon.png"
+              alt="New"
+              className="w-4 h-6 inline"
+            />
+            <span className="text-primary">New</span>
+          </span>
+        </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -467,30 +603,64 @@ const DepartmentDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card className="government-card">
                 <CardHeader>
-                  <CardTitle>Performance Metrics</CardTitle>
-                  <CardDescription>Department efficiency and SLA compliance</CardDescription>
+                  <CardTitle>Road Issue Trends</CardTitle>
+                  <CardDescription>Monthly breakdown of road-related issues</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">Performance Charts</p>
-                    </div>
+                  <div className="h-72">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={issuesPerMonth}>
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="potholes" fill="#f59e42" name="Potholes" />
+                        <Bar dataKey="resurfacing" fill="#3b82f6" name="Resurfacing" />
+                        <Bar dataKey="signage" fill="#a21caf" name="Signage" />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
                 </CardContent>
               </Card>
-
               <Card className="government-card">
                 <CardHeader>
-                  <CardTitle>Issue Trends</CardTitle>
-                  <CardDescription>Category-wise issue distribution</CardDescription>
+                  <CardTitle>Resolution Performance</CardTitle>
+                  <CardDescription>Resolved vs Pending Road Issues</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">Trend Analysis</p>
-                    </div>
+                  <div className="h-72">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={issuesPerMonth}>
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
+                        <Line type="monotone" dataKey="resolved" stroke="#22c55e" name="Resolved" />
+                        <Line type="monotone" dataKey="pending" stroke="#f43f5e" name="Pending" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="mt-6">
+                    <ResponsiveContainer width="100%" height={180}>
+                      <PieChart>
+                        <Pie
+                          data={roadIssueCategoryStats}
+                          dataKey="value"
+                          nameKey="category"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={60}
+                          label
+                        >
+                          <Cell fill="#f59e42" />
+                          <Cell fill="#3b82f6" />
+                          <Cell fill="#a21caf" />
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
                   </div>
                 </CardContent>
               </Card>
