@@ -51,6 +51,7 @@ import type { LatLngExpression } from "leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "./leaflet-zindex-fix.css"; // <-- Add this line (see new file below)
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
 const CitizenDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -279,6 +280,49 @@ const CitizenDashboard = () => {
     }
   };
 
+  // Add more demo markers for the map (simulate more issues)
+  // Scatter markers more widely by using a larger random offset and unique seed per marker
+  const demoMarkers = [
+    ...myComplaints,
+    ...Array.from({ length: 20 }).map((_, i) => {
+      // Use a wider scatter area and unique offset per marker
+      const angle = (2 * Math.PI * i) / 20;
+      const radius = 0.01 + (i % 5) * 0.005 + Math.random() * 0.01; // 0.01 to 0.035 approx
+      const lat = 23.2599 + Math.cos(angle) * radius;
+      const lng = 77.4126 + Math.sin(angle) * radius;
+      return {
+        id: `DEMO${i + 1}`,
+        title: `Demo Issue ${i + 1}`,
+        category: ["Road Issues", "Sanitation", "Street Lighting"][i % 3],
+        status: ["Submitted", "In Progress", "Resolved"][i % 3],
+        priority: ["High", "Medium", "Low"][i % 3],
+        date: "2024-01-20",
+        progress: [25, 50, 75, 100][i % 4],
+        department: [
+          "Roads & Infrastructure",
+          "Sanitation Department",
+          "Electrical Department",
+        ][i % 3],
+        estimatedTime: "2 days remaining",
+        resolvedDate: "2024-01-21",
+        lat,
+        lng,
+      };
+    }),
+  ];
+
+  // Add simple data for ward performance charts
+  const wardResolutionData = [
+    { name: "Resolved", value: 87 },
+    { name: "Unresolved", value: 13 },
+  ];
+  const wardIssueTypeData = [
+    { name: "Road Issues", value: 44 },
+    { name: "Sanitation", value: 28 },
+    { name: "Lighting", value: 18 },
+    { name: "Other", value: 10 },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-background">
       <DashboardHeader title="Citizen Dashboard" userRole="Citizen" />
@@ -477,20 +521,39 @@ const CitizenDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Locality Map & Stats */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Locality Map - now in its own row, full width, with improved marker demo */}
+        <div className="w-full mb-8">
           <Card className="government-card">
             <CardHeader>
               <CardTitle>Locality Issues Map</CardTitle>
               <CardDescription>View issues in Bhopal</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[32rem] rounded-xl overflow-hidden">
+              <div
+                className="w-full"
+                style={{
+                  margin: "0 auto",
+                  maxWidth: "100%",
+                  borderRadius: "1rem",
+                  overflow: "hidden",
+                  boxShadow: "0 2px 16px 0 rgba(0,0,0,0.06)",
+                  border: "1px solid #e5e7eb",
+                  minHeight: "32rem",
+                  height: "32rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "stretch",
+                }}
+              >
                 <MapContainer
-                  // Remove explicit type annotation from useState, just use mapCenter as LatLngExpression
                   center={mapCenter}
                   zoom={13}
-                  style={{ height: "100%", width: "100%" }}
+                  style={{
+                    height: "100%",
+                    width: "100%",
+                    minHeight: "32rem",
+                    flex: 1,
+                  }}
                   dragging={true}
                   doubleClickZoom={true}
                   scrollWheelZoom={true}
@@ -503,12 +566,12 @@ const CitizenDashboard = () => {
                     attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
-                  {myComplaints.map((complaint) =>
+                  {/* Show many markers with different statuses/colors */}
+                  {demoMarkers.map((complaint) =>
                     complaint.lat && complaint.lng ? (
                       <Marker
                         key={complaint.id}
                         position={[complaint.lat, complaint.lng]}
-                        // Fix: explicitly type as L.Icon for the icon prop
                         icon={
                           markerIcons[
                             complaint.status as keyof typeof markerIcons
@@ -565,7 +628,10 @@ const CitizenDashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
 
+        {/* Ward Performance - move to its own row, full width, more breathing space */}
+        <div className="w-full mb-8">
           <Card className="government-card">
             <CardHeader>
               <CardTitle>Ward Performance</CardTitle>
@@ -574,7 +640,7 @@ const CitizenDashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">
                     Average Resolution Time
@@ -583,22 +649,62 @@ const CitizenDashboard = () => {
                     4.2 days
                   </span>
                 </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Resolution Rate</span>
-                  <div className="flex items-center space-x-2">
-                    <Progress value={87} className="w-20 h-2" />
-                    <span className="text-sm text-success">87%</span>
+                <div className="flex flex-col md:flex-row items-center gap-12 my-6">
+                  <div className="w-full md:w-1/2 flex flex-col items-center">
+                    <ResponsiveContainer width="100%" height={160}>
+                      <PieChart>
+                        <Pie
+                          data={wardResolutionData}
+                          dataKey="value"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={60}
+                          innerRadius={32}
+                          label={({ name, percent }) =>
+                            `${name} (${Math.round(percent * 100)}%)`
+                          }
+                        >
+                          <Cell fill="#22c55e" />
+                          <Cell fill="#f43f5e" />
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="text-xs text-center text-muted-foreground mt-2">
+                      Resolved vs Unresolved
+                    </div>
+                  </div>
+                  <div className="w-full md:w-1/2 flex flex-col items-center">
+                    <ResponsiveContainer width="100%" height={160}>
+                      <PieChart>
+                        <Pie
+                          data={wardIssueTypeData}
+                          dataKey="value"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={60}
+                          innerRadius={32}
+                          label={({ name }) => name}
+                        >
+                          <Cell fill="#3b82f6" />
+                          <Cell fill="#f59e42" />
+                          <Cell fill="#a21caf" />
+                          <Cell fill="#64748b" />
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="text-xs text-center text-muted-foreground mt-2">
+                      Issue Types Distribution
+                    </div>
                   </div>
                 </div>
-
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mt-4">
                   <span className="text-sm font-medium">Most Common Issue</span>
                   <span className="text-sm text-muted-foreground">
                     Road Issues
                   </span>
                 </div>
-
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">
                     Citizen Satisfaction
@@ -613,50 +719,64 @@ const CitizenDashboard = () => {
           </Card>
         </div>
 
-        {/* Similar Issues Voting (moved below Map & Stats) */}
-        <Card className="government-card mt-6">
-          <CardHeader>
-            <CardTitle>Similar Issues In Your Area</CardTitle>
-            <CardDescription>
-              See and support issues already reported by others
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {similarIssues.map((issue) => (
-                <div
-                  key={issue.id}
-                  className="flex items-center justify-between border border-border rounded-xl p-3 bg-card/50"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-foreground">
-                        {issue.title}
-                      </span>
-                      <Badge variant="outline">{issue.category}</Badge>
+        {/* Similar Issues In Your Area - move to bottom, full width */}
+        <div className="w-full">
+          <Card className="government-card">
+            <CardHeader>
+              <CardTitle>Similar Issues In Your Area</CardTitle>
+              <CardDescription>
+                See and support issues already reported by others
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {similarIssues.map((issue) => (
+                  <div
+                    key={issue.id}
+                    className="flex flex-col md:flex-row md:items-center justify-between border border-border rounded-xl p-4 bg-gradient-to-r from-blue-50 via-slate-50 to-emerald-50 shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-lg text-foreground truncate">
+                          {issue.title}
+                        </span>
+                        <Badge variant="outline" className="ml-2">
+                          {issue.category}
+                        </Badge>
+                      </div>
+                      <div className="text-xs text-muted-foreground mb-2">
+                        Already registered by someone else. You can add your support.
+                      </div>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Already registered by someone else. You can add your
-                      support.
-                    </p>
+                    <div className="flex items-center gap-4 mt-3 md:mt-0 md:ml-6">
+                      <div className="flex flex-col items-center">
+                        <span className="text-xs text-muted-foreground mb-1">Votes</span>
+                        <span className="text-xl font-bold text-primary">{issue.votes}</span>
+                      </div>
+                      <Button
+                        size="sm"
+                        className="btn-government px-4 py-2 rounded-full font-semibold shadow-sm border border-primary/30 hover:bg-primary/90 transition"
+                        onClick={() => upvoteSimilarIssue(issue.id)}
+                        aria-label="Upvote"
+                      >
+                        <ThumbsUp className="h-4 w-4 mr-1" />
+                        Upvote
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge className="status-primary">
-                      {issue.votes} votes
-                    </Badge>
-                    <Button
-                      size="sm"
-                      className="btn-government"
-                      onClick={() => upvoteSimilarIssue(issue.id)}
-                    >
-                      <ThumbsUp className="h-4 w-4 mr-1" /> Upvote
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                ))}
+              </div>
+              <div className="mt-6 text-xs text-muted-foreground text-center">
+                <span className="inline-flex items-center gap-1">
+                  <Sparkles className="h-3 w-3 text-primary" />
+                  <span>
+                    Voting helps the government prioritize and resolve issues faster.
+                  </span>
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* How It Works Modal */}
