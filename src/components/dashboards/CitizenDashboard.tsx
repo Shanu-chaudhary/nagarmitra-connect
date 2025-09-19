@@ -745,13 +745,18 @@ const CitizenDashboard = () => {
                         </Badge>
                       </div>
                       <div className="text-xs text-muted-foreground mb-2">
-                        Already registered by someone else. You can add your support.
+                        Already registered by someone else. You can add your
+                        support.
                       </div>
                     </div>
                     <div className="flex items-center gap-4 mt-3 md:mt-0 md:ml-6">
                       <div className="flex flex-col items-center">
-                        <span className="text-xs text-muted-foreground mb-1">Votes</span>
-                        <span className="text-xl font-bold text-primary">{issue.votes}</span>
+                        <span className="text-xs text-muted-foreground mb-1">
+                          Votes
+                        </span>
+                        <span className="text-xl font-bold text-primary">
+                          {issue.votes}
+                        </span>
                       </div>
                       <Button
                         size="sm"
@@ -770,7 +775,8 @@ const CitizenDashboard = () => {
                 <span className="inline-flex items-center gap-1">
                   <Sparkles className="h-3 w-3 text-primary" />
                   <span>
-                    Voting helps the government prioritize and resolve issues faster.
+                    Voting helps the government prioritize and resolve issues
+                    faster.
                   </span>
                 </span>
               </div>
