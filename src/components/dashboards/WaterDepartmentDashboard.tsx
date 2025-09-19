@@ -59,6 +59,14 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
+// Fix for default markers
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
+
 const WaterDepartmentDashboard = () => {
   const [priorityFilter, setPriorityFilter] = useState<
     "all" | "High" | "Medium" | "Low"
@@ -428,32 +436,27 @@ const WaterDepartmentDashboard = () => {
     <div className="min-h-screen bg-background">
       <DashboardHeader title="Water Department" userRole="Department Officer" />
 
-      <div className="container mx-auto max-w-6xl p-6">
-        {/* Header Actions */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">
-              Department Overview
-            </h2>
-            <p className="text-muted-foreground">
-              Manage water supply and quality issues
-            </p>
-          </div>
-          <div className="flex space-x-3">
-            <Button variant="outline">
-              <Bell className="mr-2 h-4 w-4" />
-              Notifications (4)
-            </Button>
-            <Button
-              className="btn-government"
-              onClick={() => setAddWorkerOpen(true)}
-            >
-              <UserPlus className="mr-2 h-4 w-4" />
-              Add Worker
-            </Button>
+      {/* Hero Banner aligned with Citizen style */}
+      <div className="bg-gradient-to-r from-emerald-50 via-sky-50 to-blue-50 border-b border-border">
+        <div className="container mx-auto max-w-6xl px-6 py-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">Department Overview</h2>
+              <p className="text-muted-foreground">Manage water supply and quality issues</p>
+            </div>
+            <div className="flex space-x-3">
+              <Button variant="outline">
+                <Bell className="mr-2 h-4 w-4" /> Notifications (4)
+              </Button>
+              <Button className="btn-government" onClick={() => setAddWorkerOpen(true)}>
+                <UserPlus className="mr-2 h-4 w-4" /> Add Worker
+              </Button>
+            </div>
           </div>
         </div>
+      </div>
 
+      <div className="container mx-auto max-w-6xl p-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {departmentStats.map((stat, index) => (
@@ -461,17 +464,11 @@ const WaterDepartmentDashboard = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">
-                      {stat.label}
-                    </p>
-                    <p className="text-3xl font-bold text-foreground">
-                      {stat.value}
-                    </p>
+                    <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
+                    <p className="text-3xl font-bold text-foreground">{stat.value}</p>
                     <div className="flex items-center mt-1">
                       <TrendingUp className="h-3 w-3 text-success mr-1" />
-                      <span className="text-xs text-success">
-                        {stat.change}
-                      </span>
+                      <span className="text-xs text-success">{stat.change}</span>
                     </div>
                   </div>
                   <div className={`p-3 rounded-full bg-${stat.color}/10`}>
@@ -486,7 +483,7 @@ const WaterDepartmentDashboard = () => {
         {/* Body layout with in-page sidebar */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-3">
-            <Card className="sticky top-20">
+            <Card className="sticky top-20 mt-6 h-full bg-gradient-to-b from-slate-50 via-white to-sky-50" >
               <CardHeader>
                 <CardTitle className="text-base">Department</CardTitle>
                 <CardDescription>Quick navigation</CardDescription>
@@ -539,7 +536,7 @@ const WaterDepartmentDashboard = () => {
               </TabsList>
 
               <TabsContent value="issues" className="space-y-6">
-                <Card className="government-card">
+                <Card className="government-card bg-gradient-to-b from-slate-50 via-white to-sky-50">
                   <CardHeader>
                     <div className="flex justify-between items-center">
                       <div>
@@ -698,7 +695,7 @@ const WaterDepartmentDashboard = () => {
               </TabsContent>
 
               <TabsContent value="workers" className="space-y-6">
-                <Card className="government-card">
+                <Card className="government-card bg-gradient-to-b from-slate-50 via-white to-sky-50">
                   <CardHeader>
                     <CardTitle>Worker Management</CardTitle>
                     <CardDescription>
@@ -795,20 +792,15 @@ const WaterDepartmentDashboard = () => {
                   <CardContent>
                     <div className="h-[28rem] rounded-lg overflow-hidden">
                       <MapContainer
-                        center={[23.2599, 77.4126]}
+                        center={[23.2599, 77.4126] as [number, number]}
                         zoom={13}
                         style={{ height: "100%", width: "100%" }}
-                        dragging={true}
-                        doubleClickZoom={true}
-                        scrollWheelZoom={true}
-                        touchZoom={true}
-                        boxZoom={true}
-                        keyboard={true}
-                        zoomControl={true}
+                        {...({} as any)}
                       >
                         <TileLayer
                           attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
                           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          {...({} as any)}
                         />
                         {allIssues
                           .filter((issue) => issue.location && issue.status)
@@ -819,12 +811,12 @@ const WaterDepartmentDashboard = () => {
                                 position={[
                                   23.2599 + Math.random() * 0.01 - 0.005,
                                   77.4126 + Math.random() * 0.01 - 0.005,
-                                ]}
-                                icon={
-                                  markerIcons[
+                                ] as [number, number]}
+                                {...({
+                                  icon: markerIcons[
                                     issue.status as keyof typeof markerIcons
-                                  ] as L.Icon
-                                }
+                                  ]
+                                } as any)}
                               >
                                 <Popup>
                                   <div>

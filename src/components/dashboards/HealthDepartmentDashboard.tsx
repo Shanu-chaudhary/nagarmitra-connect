@@ -56,6 +56,11 @@ import {
   Cell,
 } from "recharts";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+// Relax types to avoid TS prop mismatches from react-leaflet typings
+const RLMapContainer = MapContainer as unknown as React.FC<any>;
+const RLTileLayer = TileLayer as unknown as React.FC<any>;
+const RLMarker = Marker as unknown as React.FC<any>;
+const RLPopup = Popup as unknown as React.FC<any>;
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -350,32 +355,27 @@ const HealthDepartmentDashboard = () => {
         userRole="Department Officer"
       />
 
-      <div className="container mx-auto max-w-6xl p-6">
-        {/* Header Actions */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">
-              Department Overview
-            </h2>
-            <p className="text-muted-foreground">
-              Manage sanitation and public health issues
-            </p>
-          </div>
-          <div className="flex space-x-3">
-            <Button variant="outline">
-              <Bell className="mr-2 h-4 w-4" />
-              Notifications (3)
-            </Button>
-            <Button
-              className="btn-government"
-              onClick={() => setAddWorkerOpen(true)}
-            >
-              <UserPlus className="mr-2 h-4 w-4" />
-              Add Worker
-            </Button>
+      {/* Hero Banner aligned with Citizen style */}
+      <div className="bg-gradient-to-r from-emerald-50 via-sky-50 to-blue-50 border-b border-border">
+        <div className="container mx-auto max-w-6xl px-6 py-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">Department Overview</h2>
+              <p className="text-muted-foreground">Manage sanitation and public health issues</p>
+            </div>
+            <div className="flex space-x-3">
+              <Button variant="outline">
+                <Bell className="mr-2 h-4 w-4" /> Notifications (3)
+              </Button>
+              <Button className="btn-government" onClick={() => setAddWorkerOpen(true)}>
+                <UserPlus className="mr-2 h-4 w-4" /> Add Worker
+              </Button>
+            </div>
           </div>
         </div>
+      </div>
 
+      <div className="container mx-auto max-w-6xl p-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {departmentStats.map((stat, index) => (
@@ -383,17 +383,11 @@ const HealthDepartmentDashboard = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">
-                      {stat.label}
-                    </p>
-                    <p className="text-3xl font-bold text-foreground">
-                      {stat.value}
-                    </p>
+                    <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
+                    <p className="text-3xl font-bold text-foreground">{stat.value}</p>
                     <div className="flex items-center mt-1">
                       <TrendingUp className="h-3 w-3 text-success mr-1" />
-                      <span className="text-xs text-success">
-                        {stat.change}
-                      </span>
+                      <span className="text-xs text-success">{stat.change}</span>
                     </div>
                   </div>
                   <div className={`p-3 rounded-full bg-${stat.color}/10`}>
@@ -408,7 +402,8 @@ const HealthDepartmentDashboard = () => {
         {/* Body layout with in-page sidebar */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-3">
-            <Card className="sticky top-20">
+            <Card className="sticky top-20 mt-6 h-full bg-gradient-to-b from-slate-50 via-white to-sky-50
+ ">
               <CardHeader>
                 <CardTitle className="text-base">Department</CardTitle>
                 <CardDescription>Quick navigation</CardDescription>
@@ -460,8 +455,8 @@ const HealthDepartmentDashboard = () => {
                 <TabsTrigger value="analytics">Analytics</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="issues" className="space-y-6">
-                <Card className="government-card">
+              <TabsContent value="issues" className="space-y-6" >
+                <Card className="government-card bg-gradient-to-b from-slate-50 via-white to-sky-50">
                   <CardHeader>
                     <div className="flex justify-between items-center">
                       <div>
@@ -620,7 +615,7 @@ const HealthDepartmentDashboard = () => {
               </TabsContent>
 
               <TabsContent value="workers" className="space-y-6">
-                <Card className="government-card">
+                <Card className="government-card bg-gradient-to-b from-slate-50 via-white to-sky-50">
                   <CardHeader>
                     <CardTitle>Worker Management</CardTitle>
                     <CardDescription>
@@ -716,7 +711,7 @@ const HealthDepartmentDashboard = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="h-[28rem] rounded-lg overflow-hidden">
-                      <MapContainer
+                      <RLMapContainer
                         center={[23.2599, 77.4126]}
                         zoom={13}
                         style={{ height: "100%", width: "100%" }}
@@ -728,7 +723,7 @@ const HealthDepartmentDashboard = () => {
                         keyboard={true}
                         zoomControl={true}
                       >
-                        <TileLayer
+                        <RLTileLayer
                           attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
                           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
@@ -736,7 +731,7 @@ const HealthDepartmentDashboard = () => {
                           .filter((issue) => issue.location && issue.status)
                           .map((issue) =>
                             issue.location && issue.status && issue.id ? (
-                              <Marker
+                              <RLMarker
                                 key={issue.id}
                                 position={[
                                   23.2599 + Math.random() * 0.01 - 0.005,
@@ -748,7 +743,7 @@ const HealthDepartmentDashboard = () => {
                                   ] as L.Icon
                                 }
                               >
-                                <Popup>
+                                <RLPopup>
                                   <div>
                                     <strong>{issue.title}</strong>
                                     <br />
@@ -766,11 +761,11 @@ const HealthDepartmentDashboard = () => {
                                       View Details
                                     </Button>
                                   </div>
-                                </Popup>
-                              </Marker>
+                                </RLPopup>
+                              </RLMarker>
                             ) : null
                           )}
-                      </MapContainer>
+                      </RLMapContainer>
                     </div>
                     <div className="flex gap-4 mt-3 text-xs items-center">
                       <span className="flex items-center gap-1">

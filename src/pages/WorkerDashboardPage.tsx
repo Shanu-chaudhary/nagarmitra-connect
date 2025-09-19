@@ -218,37 +218,43 @@ const WorkerDashboardPage = () => {
 
 	const NewTaskCard = (t: Task) => (
 		<Card key={t.id} className="border-border">
-			<CardContent className="p-4">
-				<div className="flex items-start justify-between">
-					<div className="space-y-2">
-						<div className="flex items-center gap-3">
-							<h3 className="font-semibold text-foreground">{t.title}</h3>
-							<Badge variant="outline">{t.id}</Badge>
-							<Badge variant="secondary" className={`text-xs ${t.priority === "High" ? "bg-danger/10 text-danger border-danger/30" : "bg-warning/10 text-warning border-warning/30"}`}>
-								{t.priority} Priority
-          </Badge>
+			<CardContent className="p-3 sm:p-4">
+				<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+					<div className="space-y-2 flex-1">
+						<div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+							<h3 className="font-semibold text-foreground text-sm sm:text-base">{t.title}</h3>
+							<div className="flex flex-wrap gap-2">
+								<Badge variant="outline" className="text-xs">{t.id}</Badge>
+								<Badge variant="secondary" className={`text-xs ${t.priority === "High" ? "bg-danger/10 text-danger border-danger/30" : "bg-warning/10 text-warning border-warning/30"}`}>
+									{t.priority}
+								</Badge>
+								<Badge variant="outline" className={`rounded-full px-2 py-1 text-xs bg-muted/50 status-${getStatusColor(t.status)}`}>{t.status}</Badge>
+							</div>
 						</div>
-						<p className="text-sm text-muted-foreground max-w-3xl">{t.description}</p>
-						<div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-							<span className="flex items-center"><MapPin className="h-3.5 w-3.5 mr-1" /> {t.location}</span>
-							<span className="flex items-center"><Calendar className="h-3.5 w-3.5 mr-1" /> Deadline: {t.deadline}</span>
-							<span className="flex items-center"><UserIcon className="h-3.5 w-3.5 mr-1" /> Citizen: {t.citizen}</span>
+						<p className="text-xs sm:text-sm text-muted-foreground">{t.description}</p>
+						<div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+							<span className="flex items-center"><MapPin className="h-3 w-3 mr-1 flex-shrink-0" /> <span className="truncate">{t.location}</span></span>
+							<span className="flex items-center"><Calendar className="h-3 w-3 mr-1 flex-shrink-0" /> {t.deadline}</span>
+							<span className="flex items-center"><UserIcon className="h-3 w-3 mr-1 flex-shrink-0" /> {t.citizen}</span>
 						</div>
 					</div>
-					<Badge variant="outline" className={`rounded-full px-3 py-1 text-xs bg-muted/50 status-${getStatusColor(t.status)}`}>{t.status}</Badge>
 				</div>
 
-				<div className="mt-4 flex items-center gap-3 flex-wrap">
-					<Button className="btn-government" size="sm" onClick={() => triggerCamera("before", t.id)}>
-						<Camera className="mr-2 h-4 w-4" /> Acknowledge Task • Capture Before Photo
+				<div className="mt-4 flex flex-col sm:flex-row gap-2 sm:gap-3">
+					<Button className="btn-government text-xs sm:text-sm" size="sm" onClick={() => triggerCamera("before", t.id)}>
+						<Camera className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> 
+						<span className="hidden sm:inline">Acknowledge Task • Capture Before Photo</span>
+						<span className="sm:hidden">Acknowledge & Photo</span>
 					</Button>
-					<Button variant="outline" size="sm" onClick={() => openDetails(t)}>
-						<Info className="mr-2 h-4 w-4" /> View Details
+					<Button variant="outline" size="sm" className="text-xs sm:text-sm" onClick={() => openDetails(t)}>
+						<Info className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> 
+						<span className="hidden sm:inline">View Details</span>
+						<span className="sm:hidden">Details</span>
 					</Button>
         </div>
 
-				<div className="mt-4 rounded-md border border-danger/30 bg-danger/10 p-3 text-danger text-sm flex items-start gap-2">
-					<AlertTriangle className="h-4 w-4 mt-0.5" />
+				<div className="mt-3 rounded-md border border-danger/30 bg-danger/10 p-2 sm:p-3 text-danger text-xs sm:text-sm flex items-start gap-2">
+					<AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 mt-0.5 flex-shrink-0" />
 					<span>Warning: Deadline is tomorrow! Please complete soon.</span>
 				</div>
             </CardContent>
@@ -257,52 +263,60 @@ const WorkerDashboardPage = () => {
 
 	const InProgressCard = (t: Task) => (
 		<Card key={t.id} className="border-border">
-			<CardContent className="p-4">
-				<div className="flex items-start justify-between">
-					<div className="space-y-2">
-						<div className="flex items-center gap-3">
-							<h3 className="font-semibold text-foreground">{t.title}</h3>
-							<Badge variant="outline">{t.id}</Badge>
-							<Badge className={`status-${getStatusColor(t.status)}`}>{t.status}</Badge>
+			<CardContent className="p-3 sm:p-4">
+				<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+					<div className="space-y-2 flex-1">
+						<div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+							<h3 className="font-semibold text-foreground text-sm sm:text-base">{t.title}</h3>
+							<div className="flex flex-wrap gap-2">
+								<Badge variant="outline" className="text-xs">{t.id}</Badge>
+								<Badge className={`status-${getStatusColor(t.status)} text-xs`}>{t.status}</Badge>
+							</div>
 						</div>
-						<p className="text-sm text-muted-foreground max-w-3xl">{t.description}</p>
-						<div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-							<span className="flex items-center"><MapPin className="h-3.5 w-3.5 mr-1" /> {t.location}</span>
-							<span className="flex items-center"><Calendar className="h-3.5 w-3.5 mr-1" /> Deadline: {t.deadline}</span>
-							<span className="flex items-center"><UserIcon className="h-3.5 w-3.5 mr-1" /> Citizen: {t.citizen}</span>
+						<p className="text-xs sm:text-sm text-muted-foreground">{t.description}</p>
+						<div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+							<span className="flex items-center"><MapPin className="h-3 w-3 mr-1 flex-shrink-0" /> <span className="truncate">{t.location}</span></span>
+							<span className="flex items-center"><Calendar className="h-3 w-3 mr-1 flex-shrink-0" /> {t.deadline}</span>
+							<span className="flex items-center"><UserIcon className="h-3 w-3 mr-1 flex-shrink-0" /> {t.citizen}</span>
 						</div>
 					</div>
-					<Button variant="outline" size="sm" onClick={() => openDetails(t)}>
-						<Info className="mr-2 h-4 w-4" /> View Details
+					<Button variant="outline" size="sm" className="text-xs sm:text-sm self-start sm:self-auto" onClick={() => openDetails(t)}>
+						<Info className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> 
+						<span className="hidden sm:inline">View Details</span>
+						<span className="sm:hidden">Details</span>
 					</Button>
 				</div>
 
 				{/* Photo previews */}
-				<div className="mt-4 grid grid-cols-2 gap-3">
+				<div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
 					<div className="border rounded-md p-2">
 						<p className="text-xs text-muted-foreground mb-2">Before Photo</p>
 						{t.beforeImage ? (
-							<img src={t.beforeImage} alt="Before" className="w-full h-32 object-cover rounded" />
+							<img src={t.beforeImage} alt="Before" className="w-full h-24 sm:h-32 object-cover rounded" />
 						) : (
-							<div className="h-32 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">Not captured</div>
+							<div className="h-24 sm:h-32 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">Not captured</div>
 						)}
 					</div>
 					<div className="border rounded-md p-2">
 						<p className="text-xs text-muted-foreground mb-2">After Photo</p>
 						{t.afterImage ? (
-							<img src={t.afterImage} alt="After" className="w-full h-32 object-cover rounded" />
+							<img src={t.afterImage} alt="After" className="w-full h-24 sm:h-32 object-cover rounded" />
 						) : (
-							<div className="h-32 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">Pending</div>
+							<div className="h-24 sm:h-32 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">Pending</div>
 						)}
 					</div>
 				</div>
 
-				<div className="mt-4 flex items-center gap-3">
-					<Button variant="outline" size="sm" onClick={() => triggerCamera("after", t.id)}>
-						<Camera className="mr-2 h-4 w-4" /> Capture After Photo
+				<div className="mt-4 flex flex-col sm:flex-row gap-2 sm:gap-3">
+					<Button variant="outline" size="sm" className="text-xs sm:text-sm" onClick={() => triggerCamera("after", t.id)}>
+						<Camera className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> 
+						<span className="hidden sm:inline">Capture After Photo</span>
+						<span className="sm:hidden">After Photo</span>
 					</Button>
-					<Button size="sm" className="btn-government" disabled={!t.beforeImage || !t.afterImage} onClick={() => markDone(t.id)}>
-						<CheckCircle className="mr-2 h-4 w-4" /> Mark Done
+					<Button size="sm" className="btn-government text-xs sm:text-sm" disabled={!t.beforeImage || !t.afterImage} onClick={() => markDone(t.id)}>
+						<CheckCircle className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> 
+						<span className="hidden sm:inline">Mark Done</span>
+						<span className="sm:hidden">Done</span>
 					</Button>
 				</div>
             </CardContent>
@@ -311,40 +325,42 @@ const WorkerDashboardPage = () => {
 
 	const CompletedCard = (t: Task) => (
 		<Card key={t.id} className="border-border">
-          <CardHeader>
-				<CardTitle className="text-lg">{t.title}</CardTitle>
-				<CardDescription>{t.description}</CardDescription>
+          <CardHeader className="p-3 sm:p-6">
+				<CardTitle className="text-base sm:text-lg">{t.title}</CardTitle>
+				<CardDescription className="text-sm">{t.description}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="space-y-4 p-3 sm:p-6 pt-0">
+				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
-						<p className="text-sm text-muted-foreground mb-2">Before</p>
+						<p className="text-xs sm:text-sm text-muted-foreground mb-2">Before</p>
 						{t.beforeImage ? (
-							<img src={t.beforeImage} alt="Before" className="w-full h-48 object-cover rounded" />
+							<img src={t.beforeImage} alt="Before" className="w-full h-32 sm:h-48 object-cover rounded" />
 						) : (
-							<div className="h-48 bg-muted rounded" />
+							<div className="h-32 sm:h-48 bg-muted rounded" />
 						)}
 					</div>
 					<div>
-						<p className="text-sm text-muted-foreground mb-2">After</p>
+						<p className="text-xs sm:text-sm text-muted-foreground mb-2">After</p>
 						{t.afterImage ? (
-							<img src={t.afterImage} alt="After" className="w-full h-48 object-cover rounded" />
+							<img src={t.afterImage} alt="After" className="w-full h-32 sm:h-48 object-cover rounded" />
 						) : (
-							<div className="h-48 bg-muted rounded" />
+							<div className="h-32 sm:h-48 bg-muted rounded" />
 						)}
 					</div>
                     </div>
                     
-				<div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-					<div className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {t.location}</div>
-					<div className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Deadline: {t.deadline}</div>
-					<div className="flex items-center gap-2"><UserIcon className="h-4 w-4" /> Citizen: {t.citizen}</div>
-					<div className="flex items-center gap-2"><Clock className="h-4 w-4" /> Completed: {t.completedAt}</div>
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs sm:text-sm">
+					<div className="flex items-center gap-2"><MapPin className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" /> <span className="truncate">{t.location}</span></div>
+					<div className="flex items-center gap-2"><Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" /> {t.deadline}</div>
+					<div className="flex items-center gap-2"><UserIcon className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" /> {t.citizen}</div>
+					<div className="flex items-center gap-2"><Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" /> {t.completedAt}</div>
                     </div>
 
 				<div className="flex justify-end">
-					<Button variant="outline" size="sm" onClick={() => openDetails(t)}>
-						<Info className="mr-2 h-4 w-4" /> View Details
+					<Button variant="outline" size="sm" className="text-xs sm:text-sm" onClick={() => openDetails(t)}>
+						<Info className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> 
+						<span className="hidden sm:inline">View Details</span>
+						<span className="sm:hidden">Details</span>
 					</Button>
 				</div>
 			</CardContent>
@@ -353,43 +369,57 @@ const WorkerDashboardPage = () => {
 
 	return (
 		<div className="min-h-screen bg-gradient-to-b from-background via-background to-background">
-			<DashboardHeader title="Field Worker Dashboard" userRole="Field Worker" />
+			<DashboardHeader title="Worker Dashboard" userRole="Field Worker" />
 
 			{/* Hero */}
 			<div className="bg-gradient-to-r from-emerald-50 via-sky-50 to-blue-50 border-b border-border">
-				<div className="container mx-auto max-w-6xl px-6 py-8">
-					<div className="flex items-center justify-between">
+				<div className="container mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-8">
+					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 						<div className="flex items-center gap-3">
-							<HardHat className="h-7 w-7 text-primary" />
+							<HardHat className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
 							<div>
-								<h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">My Tasks</h2>
-								<p className="text-muted-foreground">Assigned work, progress and deadlines</p>
+								<h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">My Tasks</h2>
+								<p className="text-sm sm:text-base text-muted-foreground">Assigned work, progress and deadlines</p>
 							</div>
 						</div>
-						<Badge variant="outline" className="bg-success/10 text-success border-success">Active Worker</Badge>
+						<Badge variant="outline" className="bg-success/10 text-success border-success self-start sm:self-auto">Active Worker</Badge>
                     </div>
                   </div>
                 </div>
 
-			<div className="container mx-auto max-w-6xl p-6">
+			<div className="container mx-auto max-w-6xl px-4 sm:px-6 py-6">
 				{/* Stats */}
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
 					<StatCard icon={Clock} value={newTasks.length} label="New Tasks" color="warning" />
 					<StatCard icon={FileText} value={inProgressTasks.length} label="In Progress" color="primary" />
 					<StatCard icon={CheckCircle} value={completedTasks.length} label="Completed" color="success" />
 				</div>
 
 				{/* Tabs */}
-				<div className="mb-4 flex items-center gap-2">
-					<Button variant={activeTab === "new" ? "default" : "outline"} className={activeTab === "new" ? "btn-government" : ""} onClick={() => setActiveTab("new")}>
-						New Tasks ({newTasks.length})
-                    </Button>
-					<Button variant={activeTab === "inprogress" ? "default" : "outline"} className={activeTab === "inprogress" ? "btn-government" : ""} onClick={() => setActiveTab("inprogress")}>
-						In Progress ({inProgressTasks.length})
-                      </Button>
-					<Button variant={activeTab === "completed" ? "default" : "outline"} className={activeTab === "completed" ? "btn-government" : ""} onClick={() => setActiveTab("completed")}>
-						Completed ({completedTasks.length})
-                      </Button>
+				<div className="mb-4 flex flex-col sm:flex-row gap-2 sm:gap-2">
+					<div className="flex flex-wrap gap-2">
+						<Button 
+							variant={activeTab === "new" ? "default" : "outline"} 
+							className={`${activeTab === "new" ? "btn-government" : ""} flex-1 sm:flex-none text-xs sm:text-sm`} 
+							onClick={() => setActiveTab("new")}
+						>
+							New ({newTasks.length})
+						</Button>
+						<Button 
+							variant={activeTab === "inprogress" ? "default" : "outline"} 
+							className={`${activeTab === "inprogress" ? "btn-government" : ""} flex-1 sm:flex-none text-xs sm:text-sm`} 
+							onClick={() => setActiveTab("inprogress")}
+						>
+							Progress ({inProgressTasks.length})
+						</Button>
+						<Button 
+							variant={activeTab === "completed" ? "default" : "outline"} 
+							className={`${activeTab === "completed" ? "btn-government" : ""} flex-1 sm:flex-none text-xs sm:text-sm`} 
+							onClick={() => setActiveTab("completed")}
+						>
+							Done ({completedTasks.length})
+						</Button>
+					</div>
                 </div>
 
 				{/* Task Lists */}
@@ -412,30 +442,30 @@ const WorkerDashboardPage = () => {
               
 			{/* Task Details Dialog */}
 			<Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-				<DialogContent className="sm:max-w-lg">
+				<DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
 					<DialogHeader>
-						<DialogTitle>{detailsTask?.title}</DialogTitle>
-						<DialogDescription>{detailsTask?.id}</DialogDescription>
+						<DialogTitle className="text-sm sm:text-base">{detailsTask?.title}</DialogTitle>
+						<DialogDescription className="text-xs sm:text-sm">{detailsTask?.id}</DialogDescription>
 					</DialogHeader>
 					{detailsTask && (
 						<div className="space-y-4">
-							<p className="text-sm text-muted-foreground">{detailsTask.description}</p>
-							<div className="grid grid-cols-2 gap-3 text-sm">
-								<div className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {detailsTask.location}</div>
-								<div className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Deadline: {detailsTask.deadline}</div>
-								<div className="flex items-center gap-2"><UserIcon className="h-4 w-4" /> Citizen: {detailsTask.citizen}</div>
-								{detailsTask.acknowledgedAt && (<div className="flex items-center gap-2"><Clock className="h-4 w-4" /> Acknowledged: {detailsTask.acknowledgedAt}</div>)}
-								{detailsTask.completedAt && (<div className="flex items-center gap-2"><CheckCircle className="h-4 w-4" /> Completed: {detailsTask.completedAt}</div>)}
+							<p className="text-xs sm:text-sm text-muted-foreground">{detailsTask.description}</p>
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
+								<div className="flex items-center gap-2"><MapPin className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" /> <span className="truncate">{detailsTask.location}</span></div>
+								<div className="flex items-center gap-2"><Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" /> {detailsTask.deadline}</div>
+								<div className="flex items-center gap-2"><UserIcon className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" /> {detailsTask.citizen}</div>
+								{detailsTask.acknowledgedAt && (<div className="flex items-center gap-2"><Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" /> {detailsTask.acknowledgedAt}</div>)}
+								{detailsTask.completedAt && (<div className="flex items-center gap-2"><CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" /> {detailsTask.completedAt}</div>)}
 							</div>
 							{(detailsTask.beforeImage || detailsTask.afterImage) && (
-								<div className="grid grid-cols-2 gap-3">
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 									<div>
 										<p className="text-xs text-muted-foreground mb-1">Before</p>
-										{detailsTask.beforeImage ? <img src={detailsTask.beforeImage} className="w-full h-32 object-cover rounded" /> : <div className="h-32 bg-muted rounded" />}
+										{detailsTask.beforeImage ? <img src={detailsTask.beforeImage} className="w-full h-24 sm:h-32 object-cover rounded" /> : <div className="h-24 sm:h-32 bg-muted rounded" />}
 									</div>
 									<div>
 										<p className="text-xs text-muted-foreground mb-1">After</p>
-										{detailsTask.afterImage ? <img src={detailsTask.afterImage} className="w-full h-32 object-cover rounded" /> : <div className="h-32 bg-muted rounded" />}
+										{detailsTask.afterImage ? <img src={detailsTask.afterImage} className="w-full h-24 sm:h-32 object-cover rounded" /> : <div className="h-24 sm:h-32 bg-muted rounded" />}
               </div>
             </div>
 							)}

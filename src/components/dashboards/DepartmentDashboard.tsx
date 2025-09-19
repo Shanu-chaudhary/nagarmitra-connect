@@ -56,6 +56,11 @@ import {
   Cell,
 } from "recharts";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+// Relax types to avoid TS prop mismatches from react-leaflet typings
+const RLMapContainer = MapContainer as unknown as React.FC<any>;
+const RLTileLayer = TileLayer as unknown as React.FC<any>;
+const RLMarker = Marker as unknown as React.FC<any>;
+const RLPopup = Popup as unknown as React.FC<any>;
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -512,7 +517,7 @@ const DepartmentDashboard = () => {
         {/* Body layout with in-page sidebar */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-3">
-            <Card className="sticky top-20">
+            <Card className="sticky top-12 mt-6 h-full bg-gradient-to-b from-slate-50 via-white to-sky-50">
               <CardHeader>
                 <CardTitle className="text-base">Department</CardTitle>
                 <CardDescription>Quick navigation</CardDescription>
@@ -565,7 +570,7 @@ const DepartmentDashboard = () => {
               </TabsList>
 
               <TabsContent value="issues" className="space-y-6">
-                <Card className="government-card">
+                <Card className="government-card bg-gradient-to-b from-slate-50 via-white to-sky-50">
                   <CardHeader>
                     <div className="flex justify-between items-center">
                       <div>
@@ -724,7 +729,7 @@ const DepartmentDashboard = () => {
               </TabsContent>
 
               <TabsContent value="workers" className="space-y-6">
-                <Card className="government-card">
+                <Card className="government-card bg-gradient-to-b from-slate-50 via-white to-sky-50">
                   <CardHeader>
                     <CardTitle>Worker Management</CardTitle>
                     <CardDescription>
@@ -821,7 +826,7 @@ const DepartmentDashboard = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="h-[28rem] rounded-lg overflow-hidden">
-                      <MapContainer
+                      <RLMapContainer
                         center={[23.2599, 77.4126]}
                         zoom={13}
                         style={{ height: "100%", width: "100%" }}
@@ -833,15 +838,15 @@ const DepartmentDashboard = () => {
                         keyboard={true}
                         zoomControl={true}
                       >
-                        <TileLayer
-                          attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+                        <RLTileLayer
                           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
                         />
                         {allIssues
                           .filter((issue) => issue.location && issue.status)
                           .map((issue) =>
                             issue.location && issue.status && issue.id ? (
-                              <Marker
+                              <RLMarker
                                 key={issue.id}
                                 position={
                                   // Demo: randomize marker positions near Bhopal for demo
@@ -853,10 +858,10 @@ const DepartmentDashboard = () => {
                                 icon={
                                   markerIcons[
                                     issue.status as keyof typeof markerIcons
-                                  ] as L.Icon
+                                  ] as any
                                 }
                               >
-                                <Popup>
+                                <RLPopup>
                                   <div>
                                     <strong>{issue.title}</strong>
                                     <br />
@@ -874,11 +879,11 @@ const DepartmentDashboard = () => {
                                       View Details
                                     </Button>
                                   </div>
-                                </Popup>
-                              </Marker>
+                                </RLPopup>
+                              </RLMarker>
                             ) : null
                           )}
-                      </MapContainer>
+                      </RLMapContainer>
                     </div>
                     <div className="flex gap-4 mt-3 text-xs items-center">
                       <span className="flex items-center gap-1">

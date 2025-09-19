@@ -47,6 +47,11 @@ import {
   Bot,
 } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+// Relax types to avoid TS prop mismatches from react-leaflet typings
+const RLMapContainer = MapContainer as unknown as React.FC<any>;
+const RLTileLayer = TileLayer as unknown as React.FC<any>;
+const RLMarker = Marker as unknown as React.FC<any>;
+const RLPopup = Popup as unknown as React.FC<any>;
 import type { LatLngExpression } from "leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -329,44 +334,47 @@ const CitizenDashboard = () => {
 
       {/* Hero Banner */}
       <div className="bg-gradient-to-r from-emerald-50 via-sky-50 to-blue-50 border-b border-border">
-        <div className="container mx-auto max-w-6xl px-6 py-8">
+        <div className="container mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs text-primary ring-1 ring-primary/20">
-                <Sparkles className="h-3.5 w-3.5" />
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-2 sm:px-3 py-1 text-xs text-primary ring-1 ring-primary/20">
+                <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 Empowering Citizens
               </div>
-              <h1 className="mt-3 text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">
+              <h1 className="mt-3 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight text-foreground">
                 Report, Track and Support Civic Improvements
               </h1>
-              <p className="mt-2 text-muted-foreground max-w-2xl">
+              <p className="mt-2 text-sm sm:text-base text-muted-foreground max-w-2xl">
                 Easily register complaints, vote on similar issues, and share
                 feedback after resolution. Your voice shapes a better city.
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
               <Button
                 onClick={() => setShowReportModal(true)}
-                className="btn-government h-11 px-5"
+                className="btn-government h-10 sm:h-11 px-4 sm:px-5 text-sm sm:text-base"
               >
-                <Plus className="h-4 w-4 mr-2" /> Report New Issue
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" /> 
+                <span className="hidden sm:inline">Report New Issue</span>
+                <span className="sm:hidden">Report Issue</span>
               </Button>
               <Button
                 variant="outline"
-                className="h-11 px-5"
+                className="h-10 sm:h-11 px-4 sm:px-5 text-sm sm:text-base"
                 onClick={() => setShowHowItWorks(true)}
               >
-                Learn How It Works
-                <ChevronRight className="h-4 w-4 ml-1" />
+                <span className="hidden sm:inline">Learn How It Works</span>
+                <span className="sm:hidden">How It Works</span>
+                <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto max-w-6xl p-6 section-soft">
+      <div className="container mx-auto max-w-6xl px-4 sm:px-6 py-4 sm:py-6 section-soft">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {stats.map((stat, index) => (
             <Card
               key={index}
@@ -375,20 +383,20 @@ const CitizenDashboard = () => {
               <div
                 className={`absolute inset-x-0 -top-1 h-1 bg-${stat.color}`}
               />
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">
                       {stat.label}
                     </p>
-                    <p className="text-3xl font-extrabold text-foreground">
+                    <p className="text-2xl sm:text-3xl font-extrabold text-foreground">
                       {stat.value}
                     </p>
                   </div>
                   <div
-                    className={`p-3 rounded-xl bg-${stat.color}/10 ring-1 ring-${stat.color}/20`}
+                    className={`p-2 sm:p-3 rounded-xl bg-${stat.color}/10 ring-1 ring-${stat.color}/20`}
                   >
-                    <stat.icon className={`h-6 w-6 text-${stat.color}`} />
+                    <stat.icon className={`h-5 w-5 sm:h-6 sm:w-6 text-${stat.color}`} />
                   </div>
                 </div>
               </CardContent>
@@ -397,12 +405,11 @@ const CitizenDashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        {/* Quick Actions */}
         <Card className="government-card">
-          <CardHeader className="flex flex-row items-center justify-between py-3">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 gap-3">
             <div>
-              <CardTitle className="text-lg">Quick Actions</CardTitle>
-              <CardDescription className="text-sm">
+              <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
                 Start a report instantly
               </CardDescription>
             </div>
@@ -410,70 +417,68 @@ const CitizenDashboard = () => {
             {/* Report via Call Button */}
             <Button
               asChild
-              className="h-12 w-48 rounded-lg bg-primary text-white hover:bg-primary/90 flex items-center justify-center gap-2"
+              className="h-10 sm:h-12 w-full sm:w-48 rounded-lg bg-primary text-white hover:bg-primary/90 flex items-center justify-center gap-2"
             >
               <a href="tel:+1800123456" aria-label="Report via Call">
-                <Phone className="h-5 w-5" />
-                <span className="text-sm font-medium">Report via Call</span>
+                <Phone className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="text-xs sm:text-sm font-medium">Report via Call</span>
               </a>
             </Button>
           </CardHeader>
         </Card>
 
         {/* My Complaints */}
-        <Card className="government-card mt-6">
-          <CardHeader>
-            <CardTitle>Your Issues</CardTitle>
-            <CardDescription>
+        <Card className="government-card mt-4 sm:mt-6 bg-gradient-to-b from-slate-50 via-white to-sky-50">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-base sm:text-lg">Your Issues</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
               Track the status of your reported issues
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="p-4 sm:p-6 pt-0">
+            <div className="space-y-3 sm:space-y-4">
               {myComplaints.map((complaint) => (
                 <div
                   key={complaint.id}
-                  className="border border-border rounded-xl p-4 hover-lift bg-card/50"
+                  className="border border-border rounded-xl p-3 sm:p-4 hover-lift bg-card/50"
                 >
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex flex-col gap-3 sm:gap-4">
                     <div className="space-y-2">
-                      <div className="flex items-center gap-3">
-                        <h3 className="font-semibold text-foreground text-lg">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                        <h3 className="font-semibold text-foreground text-sm sm:text-base flex-1">
                           {complaint.title}
                         </h3>
-                        <Badge variant="outline">{complaint.id}</Badge>
+                        <Badge variant="outline" className="text-xs self-start sm:self-auto">{complaint.id}</Badge>
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                      <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
                         <Badge
                           className={`status-${getStatusColor(
                             complaint.status
-                          )}`}
+                          )} text-xs`}
                         >
-                          {" "}
-                          {complaint.status}{" "}
+                          {complaint.status}
                         </Badge>
                         <Badge
                           variant="outline"
                           className={`text-${getPriorityColor(
                             complaint.priority
-                          )}`}
+                          )} text-xs`}
                         >
-                          {" "}
-                          {complaint.priority} Priority{" "}
+                          {complaint.priority}
                         </Badge>
                         <span className="flex items-center">
-                          <MapPin className="h-3.5 w-3.5 mr-1" />
-                          {complaint.department}
+                          <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 flex-shrink-0" />
+                          <span className="truncate">{complaint.department}</span>
                         </span>
                         <span className="flex items-center">
-                          <Clock className="h-3.5 w-3.5 mr-1" />
+                          <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 flex-shrink-0" />
                           {complaint.date}
                         </span>
                       </div>
 
                       <div className="space-y-1">
-                        <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center justify-between text-xs sm:text-sm">
                           <span className="text-muted-foreground">
                             Progress
                           </span>
@@ -481,25 +486,25 @@ const CitizenDashboard = () => {
                             {complaint.progress}%
                           </span>
                         </div>
-                        <Progress value={complaint.progress} className="h-2" />
+                        <Progress value={complaint.progress} className="h-1.5 sm:h-2" />
                       </div>
 
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         {complaint.status === "Resolved"
                           ? `Resolved on ${complaint.resolvedDate}`
                           : complaint.estimatedTime}
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                      <Button variant="outline" size="sm" className="text-xs sm:text-sm">
                         View Details
                       </Button>
                       {complaint.status === "Resolved" ? (
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-warning"
+                          className="text-warning text-xs sm:text-sm"
                           onClick={() => openFeedback(complaint.id)}
                         >
                           Rate Resolution
@@ -507,7 +512,7 @@ const CitizenDashboard = () => {
                       ) : (
                         <Button
                           size="sm"
-                          className="btn-government"
+                          className="btn-government text-xs sm:text-sm"
                           onClick={() => openTracking(complaint)}
                         >
                           Follow Update
@@ -522,36 +527,36 @@ const CitizenDashboard = () => {
         </Card>
 
         {/* Locality Map - now in its own row, full width, with improved marker demo */}
-        <div className="w-full mb-8">
+        <div className="w-full mb-6 sm:mb-8">
           <Card className="government-card">
-            <CardHeader>
-              <CardTitle>Locality Issues Map</CardTitle>
-              <CardDescription>View issues in Bhopal</CardDescription>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-base sm:text-lg">Locality Issues Map</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">View issues in Bhopal</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6 pt-0">
               <div
                 className="w-full"
                 style={{
                   margin: "0 auto",
                   maxWidth: "100%",
-                  borderRadius: "1rem",
+                  borderRadius: "0.75rem",
                   overflow: "hidden",
                   boxShadow: "0 2px 16px 0 rgba(0,0,0,0.06)",
                   border: "1px solid #e5e7eb",
-                  minHeight: "32rem",
-                  height: "32rem",
+                  minHeight: "20rem",
+                  height: "20rem",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "stretch",
                 }}
               >
-                <MapContainer
+                <RLMapContainer
                   center={mapCenter}
-                  zoom={13}
+                  zoom={12}
                   style={{
                     height: "100%",
                     width: "100%",
-                    minHeight: "32rem",
+                    minHeight: "20rem",
                     flex: 1,
                   }}
                   dragging={true}
@@ -562,14 +567,14 @@ const CitizenDashboard = () => {
                   keyboard={true}
                   zoomControl={true}
                 >
-                  <TileLayer
+                  <RLTileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
                   {/* Show many markers with different statuses/colors */}
                   {demoMarkers.map((complaint) =>
                     complaint.lat && complaint.lng ? (
-                      <Marker
+                      <RLMarker
                         key={complaint.id}
                         position={[complaint.lat, complaint.lng]}
                         icon={
@@ -578,7 +583,7 @@ const CitizenDashboard = () => {
                           ] as L.Icon
                         }
                       >
-                        <Popup>
+                        <RLPopup>
                           <div>
                             <strong>{complaint.title}</strong>
                             <br />
@@ -594,36 +599,36 @@ const CitizenDashboard = () => {
                               Track
                             </Button>
                           </div>
-                        </Popup>
-                      </Marker>
+                        </RLPopup>
+                      </RLMarker>
                     ) : null
                   )}
-                </MapContainer>
+                </RLMapContainer>
               </div>
-              <div className="flex gap-4 mt-3 text-xs items-center">
+              <div className="flex flex-wrap gap-2 sm:gap-4 mt-3 text-xs items-center">
                 <span className="flex items-center gap-1">
                   <img
                     src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png"
                     alt="Resolved"
-                    className="w-4 h-6 inline"
+                    className="w-3 h-4 sm:w-4 sm:h-6 inline"
                   />
-                  <span className="text-success">Resolved</span>
+                  <span className="text-success text-xs">Resolved</span>
                 </span>
                 <span className="flex items-center gap-1">
                   <img
                     src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png"
                     alt="In Progress"
-                    className="w-4 h-6 inline"
+                    className="w-3 h-4 sm:w-4 sm:h-6 inline"
                   />
-                  <span className="text-warning">In Progress</span>
+                  <span className="text-warning text-xs">In Progress</span>
                 </span>
                 <span className="flex items-center gap-1">
                   <img
                     src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon.png"
                     alt="Submitted"
-                    className="w-4 h-6 inline"
+                    className="w-3 h-4 sm:w-4 sm:h-6 inline"
                   />
-                  <span className="text-primary">Submitted</span>
+                  <span className="text-primary text-xs">Submitted</span>
                 </span>
               </div>
             </CardContent>
@@ -631,27 +636,27 @@ const CitizenDashboard = () => {
         </div>
 
         {/* Ward Performance - move to its own row, full width, more breathing space */}
-        <div className="w-full mb-8">
-          <Card className="government-card">
-            <CardHeader>
-              <CardTitle>Ward Performance</CardTitle>
-              <CardDescription>
+        <div className="w-full mb-6 sm:mb-8">
+          <Card className="government-card bg-gradient-to-b from-slate-50 via-white to-sky-50">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-base sm:text-lg">Ward Performance</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
                 Resolution statistics for your ward
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
+            <CardContent className="p-4 sm:p-6 pt-0">
+              <div className="space-y-4 sm:space-y-6">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">
+                  <span className="text-xs sm:text-sm font-medium">
                     Average Resolution Time
                   </span>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-xs sm:text-sm text-muted-foreground">
                     4.2 days
                   </span>
                 </div>
-                <div className="flex flex-col md:flex-row items-center gap-12 my-6">
-                  <div className="w-full md:w-1/2 flex flex-col items-center">
-                    <ResponsiveContainer width="100%" height={160}>
+                <div className="flex flex-col lg:flex-row items-center gap-6 sm:gap-12 my-4 sm:my-6">
+                  <div className="w-full lg:w-1/2 flex flex-col items-center">
+                    <ResponsiveContainer width="100%" height={140}>
                       <PieChart>
                         <Pie
                           data={wardResolutionData}
@@ -659,8 +664,8 @@ const CitizenDashboard = () => {
                           nameKey="name"
                           cx="50%"
                           cy="50%"
-                          outerRadius={60}
-                          innerRadius={32}
+                          outerRadius={50}
+                          innerRadius={25}
                           label={({ name, percent }) =>
                             `${name} (${Math.round(percent * 100)}%)`
                           }
@@ -674,8 +679,8 @@ const CitizenDashboard = () => {
                       Resolved vs Unresolved
                     </div>
                   </div>
-                  <div className="w-full md:w-1/2 flex flex-col items-center">
-                    <ResponsiveContainer width="100%" height={160}>
+                  <div className="w-full lg:w-1/2 flex flex-col items-center">
+                    <ResponsiveContainer width="100%" height={140}>
                       <PieChart>
                         <Pie
                           data={wardIssueTypeData}
@@ -683,8 +688,8 @@ const CitizenDashboard = () => {
                           nameKey="name"
                           cx="50%"
                           cy="50%"
-                          outerRadius={60}
-                          innerRadius={32}
+                          outerRadius={50}
+                          innerRadius={25}
                           label={({ name }) => name}
                         >
                           <Cell fill="#3b82f6" />
@@ -700,18 +705,18 @@ const CitizenDashboard = () => {
                   </div>
                 </div>
                 <div className="flex items-center justify-between mt-4">
-                  <span className="text-sm font-medium">Most Common Issue</span>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-xs sm:text-sm font-medium">Most Common Issue</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground">
                     Road Issues
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">
+                  <span className="text-xs sm:text-sm font-medium">
                     Citizen Satisfaction
                   </span>
                   <div className="flex items-center space-x-1">
-                    <TrendingUp className="h-4 w-4 text-success" />
-                    <span className="text-sm text-success">4.3/5</span>
+                    <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-success" />
+                    <span className="text-xs sm:text-sm text-success">4.3/5</span>
                   </div>
                 </div>
               </div>
@@ -722,25 +727,25 @@ const CitizenDashboard = () => {
         {/* Similar Issues In Your Area - move to bottom, full width */}
         <div className="w-full">
           <Card className="government-card">
-            <CardHeader>
-              <CardTitle>Similar Issues In Your Area</CardTitle>
-              <CardDescription>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-base sm:text-lg">Similar Issues In Your Area</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
                 See and support issues already reported by others
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="p-4 sm:p-6 pt-0">
+              <div className="space-y-3 sm:space-y-4">
                 {similarIssues.map((issue) => (
                   <div
                     key={issue.id}
-                    className="flex flex-col md:flex-row md:items-center justify-between border border-border rounded-xl p-4 bg-gradient-to-r from-blue-50 via-slate-50 to-emerald-50 shadow-sm hover:shadow-md transition-shadow"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between border border-border rounded-xl p-3 sm:p-4 bg-gradient-to-r from-blue-50 via-slate-50 to-emerald-50 shadow-sm hover:shadow-md transition-shadow"
                   >
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold text-lg text-foreground truncate">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
+                        <span className="font-semibold text-sm sm:text-base text-foreground truncate">
                           {issue.title}
                         </span>
-                        <Badge variant="outline" className="ml-2">
+                        <Badge variant="outline" className="text-xs self-start sm:self-auto">
                           {issue.category}
                         </Badge>
                       </div>
@@ -749,29 +754,29 @@ const CitizenDashboard = () => {
                         support.
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 mt-3 md:mt-0 md:ml-6">
+                    <div className="flex items-center gap-3 sm:gap-4 mt-3 sm:mt-0 sm:ml-6">
                       <div className="flex flex-col items-center">
                         <span className="text-xs text-muted-foreground mb-1">
                           Votes
                         </span>
-                        <span className="text-xl font-bold text-primary">
+                        <span className="text-lg sm:text-xl font-bold text-primary">
                           {issue.votes}
                         </span>
                       </div>
                       <Button
                         size="sm"
-                        className="btn-government px-4 py-2 rounded-full font-semibold shadow-sm border border-primary/30 hover:bg-primary/90 transition"
+                        className="btn-government px-3 sm:px-4 py-2 rounded-full font-semibold shadow-sm border border-primary/30 hover:bg-primary/90 transition text-xs sm:text-sm"
                         onClick={() => upvoteSimilarIssue(issue.id)}
                         aria-label="Upvote"
                       >
-                        <ThumbsUp className="h-4 w-4 mr-1" />
+                        <ThumbsUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                         Upvote
                       </Button>
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="mt-6 text-xs text-muted-foreground text-center">
+              <div className="mt-4 sm:mt-6 text-xs text-muted-foreground text-center">
                 <span className="inline-flex items-center gap-1">
                   <Sparkles className="h-3 w-3 text-primary" />
                   <span>
@@ -787,44 +792,44 @@ const CitizenDashboard = () => {
 
       {/* How It Works Modal */}
       <Dialog open={showHowItWorks} onOpenChange={setShowHowItWorks}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">
+            <DialogTitle className="text-lg sm:text-2xl font-bold">
               Fixing civic issues is easy as 1-2-3
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-sm">
               Follow these simple steps to make your neighbourhood better.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 py-2">
             <div className="text-center">
-              <div className="mx-auto mb-3 h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
+              <div className="mx-auto mb-3 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm sm:text-base">
                 1
               </div>
-              <h4 className="font-semibold mb-1">Post a complaint</h4>
-              <p className="text-sm text-muted-foreground">
+              <h4 className="font-semibold mb-1 text-sm sm:text-base">Post a complaint</h4>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Report potholes, garbage, bad roads and other civic issues in
                 your area.
               </p>
             </div>
             <div className="text-center">
-              <div className="mx-auto mb-3 h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
+              <div className="mx-auto mb-3 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm sm:text-base">
                 2
               </div>
-              <h4 className="font-semibold mb-1">Get community to vote-up</h4>
-              <p className="text-sm text-muted-foreground">
+              <h4 className="font-semibold mb-1 text-sm sm:text-base">Get community to vote-up</h4>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Votes prioritise your complaint. The more support, the higher
                 the priority.
               </p>
             </div>
             <div className="text-center">
-              <div className="mx-auto mb-3 h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
+              <div className="mx-auto mb-3 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm sm:text-base">
                 3
               </div>
-              <h4 className="font-semibold mb-1">
+              <h4 className="font-semibold mb-1 text-sm sm:text-base">
                 Get your complaint resolved
               </h4>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Interact with authorities and representatives to get it
                 resolved.
               </p>
@@ -878,10 +883,10 @@ const CitizenDashboard = () => {
 
       {/* Tracking Modal */}
       <Dialog open={trackingOpen} onOpenChange={setTrackingOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Issue Tracking</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-base sm:text-lg">Issue Tracking</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">
               {trackingComplaint
                 ? `${trackingComplaint.id} • ${trackingComplaint.title}`
                 : ""}
@@ -962,10 +967,10 @@ const CitizenDashboard = () => {
 
       {/* Feedback Modal (restored) */}
       <Dialog open={showFeedbackModal} onOpenChange={setShowFeedbackModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Rate Resolution</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-base sm:text-lg">Rate Resolution</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">
               Share your feedback with the department for complaint{" "}
               {selectedComplaintId}
             </DialogDescription>

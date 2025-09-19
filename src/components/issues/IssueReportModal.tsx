@@ -28,7 +28,7 @@ interface IssueReportModalProps {
 }
 
 const IssueReportModal = ({ open, onOpenChange }: IssueReportModalProps) => {
-  const [reportMethod, setReportMethod] = useState("text");
+  const [reportMethod, setReportMethod] = useState("photo");
   const [isRecording, setIsRecording] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -144,8 +144,8 @@ const IssueReportModal = ({ open, onOpenChange }: IssueReportModalProps) => {
               <h3 className="text-lg font-semibold mb-4">Choose Reporting Method</h3>
               <Tabs value={reportMethod} onValueChange={setReportMethod}>
                 <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="text">Text Description</TabsTrigger>
                   <TabsTrigger value="photo">Photo Upload</TabsTrigger>
+                  <TabsTrigger value="text">Text Description</TabsTrigger>
                   <TabsTrigger value="voice">Voice Note</TabsTrigger>
                 </TabsList>
 

@@ -37,7 +37,14 @@ const DashboardHeader = ({ title, userRole }: DashboardHeaderProps) => {
         {/* Logo & Title */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
-            <img src="/nagarmitra-logo.png" alt="NagarMitra" className="h-6 w-6" />
+            <img 
+              src="/nagarmitra-logo.png" 
+              alt="NagarMitra" 
+              className="h-6 w-6"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
             <span className="text-lg font-bold text-foreground">NagarMitra</span>
           </div>
           <div className="h-4 w-px bg-border hidden sm:block" />
